@@ -1,0 +1,211 @@
+---
+title: 'PhyloMeth: Getting Trees and Data'
+author: "Alex Faidiga"
+date: "January 20, 2020"
+output: html_document
+---
+Let's get some trees from Open Tree of Life. This is in some ways a successor to TreeBASE: another repository of trees (though it has only partial overlap with the trees in TreeBASE (or in another repository, Dryad). Unlike TreeBASE, anyone, not just the author, can add trees to Open Tree's repository. Another important distinction is that Open Tree seeks to create a single tree for all life by creating essentially a supreme super tree.
+
+Now let's get ya tree, replacing the `eval=FALSE` with `eval=TRUE` and replacing the missing info.
+
+```{r, results="hide"}
+
+	library(rotl)
+	library(ape)
+
+ rosa.id <- tnrs_match_names("rosa")$ott_id
+	# Now get Open Tree's current best estimate of the phylogeny for the group
+	# They call this the tree of life; we can get the subtree for just this group.
+	rosa.tree <- tol_subtree(ott_id=rosa.id)
+
+	# Let's plot the tree:
+	plot.phylo(rosa.tree, type="fan", cex=0.2)
+
+```
+
+It has a lot of polytomies, representing uncertainty. A maximally resolved tree (if rooted) will have one fewer internal nodes than terminal nodes: think of a tree with three taxa, ((A,B),C): it will have the MRCA of A and B and the MRCA of A, B, and C: three terminals, two internal nodes. If it had no information, it would only have one node. So we can look at the ratio of number of internal nodes to number of possible internal nodes to figure out how resolved a tree is (subtracting 1 from each to account for the root node that must always exist)
+
+```{r, echo = FALSE}
+	print(paste("The rosa tree has ", Ntip(rosa.tree), " terminals and ",
+	Nnode(rosa.tree), " internal nodes out of ",Ntip(rosa.tree)-2,
+	" possible, which means it is ",
+	round(100*(Nnode(rosa.tree)-1)/(Ntip(rosa.tree)-3), 2),
+	"% resolved", sep=""))
+```
+
+Open Tree can also return the original studies with the source trees.
+
+```{r eval = TRUE}
+	rosa.studies <- studies_find_studies(property="ot:focalCladeOTTTaxonName",
+	value="Rosa")
+	rosa.studies.ids <- unlist(rosa.studies$study_ids)
+  rosa.tree.ids <- unlist(rosa.studies$tree_ids)
+	# Let's get info on the first study
+  # Note: I did the second study instead because it only has one tree associated with it, which makes plotting the tree easier down the line.
+	rosa.study1.metadata <- get_study_meta(rosa.studies[[1]][[2]])
+	print(get_publication(rosa.study1.metadata))
+
+	# And let's get the tree from this study
+	# Look in rotl documentation for the right function
+	# Hint: get_study_trees() is close, but you don't know the tree.id
+	# Note: I do know the tree ID so I just used get_study_tree.
+  rosa.study1.tree1 <- get_study_tree(rosa.studies.ids[[2]], rosa.tree.ids[[2]])
+
+  # And plot it
+	plot.phylo(rosa.study1.tree1, type="fan", cex=0.2)
+
+	#Return both trees
+	return.list <- list(rosa.tree, rosa.study1.tree1)
+	names(return.list) <- c("tol.tree", "study1.tree")
+	return.list
+
+```
+
+Another question is where to get data. One important way is to collect your own: go out and measure seed size, count insect hairs, measure polar bear weight, etc. However, another way is to gather data already published by others. As with trees, it is important to *cite your sources*. People have put a lot of work into gathering data, and citation is the main way they get credit. It is also an essential way to reward people who choose to share data for others to build upon, correct, and check for reproducibility (some researchers still choose not to share data). Having citations also lets you and future scientists check for problems.
+
+There are many places to get data. Perhaps the most convenient is to use [rOpenSci's packages](https://ropensci.org/packages/), which have interfaces to places like [Barcode of Life](https://github.com/ropensci/bold), [GBIF](https://github.com/ropensci/rgbif), [Encyclopedia of Life](https://github.com/ropensci/reol), [Neotoma paleoecological database](https://github.com/ropensci/neotoma), [Fishbase](https://github.com/ropensci/rfishbase), and much more. A major source for datasets and supplemental from particular papers is the [Dryad](http://datadryad.org) site. For plant traits, the [TRY database](https://www.try-db.org/TryWeb/Home.php), which has many different datasets, can be useful, though policies on sharing can differ by dataset. [Morphbank](http://www.morphbank.net) has biological images while [Morphobank](https://morphobank.org) has images and other phenotypic data. Katherine Bannar-Martin has a [list](http://www.khbannarmartin.com/online-databases/) of databases for biological anthropology, mammals, fish, other vertebrates, plants, and more.
+
+For homework, consider what biological question you're curious about and gather data for it. Importantly, **look at the data** before using it. Data are messy. For example, take latitude and longitude. Nice, continuous numbers: not "smooth vs hairy" but something you just read from your GPS -- sure, there may be some imprecision, but it's not that bad, right? However, such data are full of errors: incorrect taxonomy, dropping signs or direction labels (140.5 W longitude is -140.5, not 140.5), entering 0,0 for missing data rather than leaving blank, recording the location of the collection where the specimen is housed rather than where it was collected, recording location of specimens under cultivation or in captivity (a polar bear in the San Diego Zoo), or just simple errors. Other kinds of data have their own problems: fish length -- is it snout to end of tail fin, snout to vent? Is it for the biggest adult (beware indeterminate growth), average adult, whatever fish, adult or juvenile, was caught? For plant growth habit, how are woody vines counted: as woody (since they have woody structure) or herbaceous (not self supporting or tall)? Any time continuous variation is put into discrete bins, there are weird corner cases -- after all, it's very rare for a trait to change instantly in one generation, even seemingly discrete ones like presence of eyes (what about cave fish?) or number of limbs (skinks? male boa constrictors with pelvic spurs?).
+
+# Homework: Get data from an external source, load the data in, plot the data, summarize the data, etc. to make sure there are no weird values.
+
+I am interested in how many independent losses of cleistogamy have occured in Viola, and if this loss is associated with environmental variables. My hypothesis is that cleistogamy has been lost independently several times across the phylogeny, and that this loss is associated with a shift to warmer, drier habitats with greater light availability. This is because such habitats have greater light (and probably pollinator) availability, and thus cleistogamy is not necessary to ensure reproductive success. 
+
+Type of data I will need: 
+  + sequences to build viola phylogeny (whole genus of ~600 sp.? or focus on north american violets?)
+  + environmental data, e.g. mean temperature, soil moisture, habitat type
+  + presence or absence of cleistogamy in a given species
+
+Because occurrence data do not come with envnironmental data, I will try to download occurrence data for V. rostrata and V. pedata from GBIF and do some simple comparisons for their ranges (e.g. how many states do they occur in, how many observations, phenology, etc.)
+
+##Using the rgbif package 
+
+###Obtaining taxa keys and estimating occurrence data
+```{r, eval=TRUE}
+
+library(rgbif)
+#two CL species:
+name_suggest(q='Viola rostrata')
+name_suggest(q='Viola pubescens')
+#two non-CL species:
+name_suggest(q='Viola pedata')
+name_suggest(q='Viola canadensis')
+```
+
+There are two species keys for viola rostrata: 5331225 and 7766886. Pedata has one: 5331278.
+
+```{r, echo=FALSE}
+rostrata_key1 <- 5331225
+rostrata_key2 <- 7766886
+pubescens_key <- 5331338
+pedata_key <- 5331278
+canadensis_key <- 5331231
+
+print(paste("Viola rostrata with key #", rostrata_key1, " has ",
+	occ_count(taxonKey = rostrata_key1, country = "US"), " occurrences in the US.", sep=""))
+print(paste("Viola rostrata with key #", rostrata_key2, " has ",
+	occ_count(taxonKey = rostrata_key2, country = "US"), " occurrences in the US.", sep=""))
+print(paste("Viola pubescens with key #", pubescens_key, " has ",
+	occ_count(taxonKey = pubescens_key, country = "US"), " occurrences in the US.", sep=""))
+print(paste("Viola pedata with key #", pedata_key, " has ",
+	occ_count(taxonKey = pedata_key, country = "US"), " occurrences in the US.", sep=""))
+print(paste("Viola canadensis with key #", canadensis_key, " has ", occ_count(taxonKey = canadensis_key, country = "US"), " occurrences in the US.", sep=""))
+
+occ_search(taxonKey = rostrata_key2, return = "data")
+
+```
+There are only two records for rostrata key #7766886, and they are a species identification that I've never seen before. They don't have lat-long data so I won't use them anyway.
+
+### Creating data frames with occurrence data for each species
+```{r, eval=TRUE}
+rostrata_data <- occ_search(
+  taxonKey = rostrata_key1, 
+  return = "data", 
+  country = "US",
+  hasCoordinate = TRUE,
+  hasGeospatialIssue= FALSE,
+  limit = 4000,
+  fields = c('scientificName', 'specificEpithet', 'eventDate', 'year', 'month', 'day', 'decimalLatitude', 'decimalLongitude', 'elevation', 'verbatimLocality', 'stateProvince', 'basisOfRecord', 'institutionCode'))
+
+pubescens_data <- occ_search(
+  taxonKey = pubescens_key, 
+  return = "data", 
+  country = "US",
+  hasCoordinate = TRUE,
+  hasGeospatialIssue= FALSE,
+  limit = 4000,
+  fields = c('scientificName', 'specificEpithet', 'eventDate', 'year', 'month', 'day', 'decimalLatitude', 'decimalLongitude', 'elevation', 'verbatimLocality', 'stateProvince', 'basisOfRecord', 'institutionCode'))
+
+pedata_data <- occ_search(
+  taxonKey = pedata_key, 
+  return = "data", 
+  country = "US",
+  hasCoordinate = TRUE,
+  hasGeospatialIssue= FALSE,
+  limit = 4000,
+  fields = c('scientificName', 'specificEpithet', 'eventDate', 'year', 'month', 'day', 'decimalLatitude', 'decimalLongitude', 'elevation', 'verbatimLocality', 'stateProvince', 'basisOfRecord', 'institutionCode'))
+
+canadensis_data <- occ_search(
+  taxonKey = canadensis_key, 
+  return = "data", 
+  country = "US",
+  hasCoordinate = TRUE,
+  hasGeospatialIssue= FALSE,
+  limit = 4000,
+  fields = c('scientificName', 'specificEpithet', 'eventDate', 'year', 'month', 'day', 'decimalLatitude', 'decimalLongitude', 'elevation', 'verbatimLocality', 'stateProvince', 'basisOfRecord', 'institutionCode'))
+
+```
+
+Now I  have four datasets of occurrence data for violet species occurring in the U.S. that have geospatial data with (supposedly) no issues. 
+
+```{r echo = FALSE}
+print(paste("Number of rostrata occurrences in TN: ", nrow(rostrata_data[rostrata_data$stateProvince=="Tennessee",]), sep=""))
+print(paste("Number of pubescens occurrences in TN: ", nrow(pubescens_data[pubescens_data$stateProvince=="Tennessee",]), sep=""))
+print(paste("Number of pedata occurrences in TN: ", nrow(pedata_data[pedata_data$stateProvince=="Tennessee",]), sep=""))
+print(paste("Number of candensis occurrences in TN: ", nrow(canadensis_data[canadensis_data$stateProvince=="Tennessee",]), sep=""))
+```
+
+I'd like to know how many different states each species occurs in, but I have to figure out the R code first. 
+
+###Plotting GBIF occurrence data
+
+```{r echo = FALSE}
+library(maps)
+library(usmap)
+library(ggplot2)
+
+#have to transform data so it's able to be used with plot_usmap
+ros_geo <- data.frame(lon = rostrata_data$decimalLongitude, lat = rostrata_data$decimalLatitude)
+pub_geo <- data.frame(lon = pubescens_data$decimalLongitude, lat = pubescens_data$decimalLatitude)
+ped_geo <- data.frame(lon = pedata_data$decimalLongitude, lat = pedata_data$decimalLatitude)
+can_geo <- data.frame(lon = canadensis_data$decimalLongitude, lat = canadensis_data$decimalLatitude)
+
+transformed_ros_dat <- usmap_transform(ros_geo)
+transformed_pub_dat <- usmap_transform(pub_geo)
+transformed_ped_dat <- usmap_transform(ped_geo)
+transformed_can_dat <- usmap_transform(can_geo)
+
+
+plot_usmap("states", exclude = c("AK", "HI")) + 
+  geom_point(data = transformed_pub_dat,
+             aes(x = lon.1, y = lat.1),
+             color = "red",
+             size = 0.2) +
+  geom_point(data = transformed_ros_dat,
+             aes(x = lon.1, y = lat.1),
+             color = "pink",
+             size = 0.2) +
+  geom_point(data = transformed_ped_dat,
+             aes(x = lon.1, y = lat.1),
+             color = "blue",
+             size = 0.2) +
+  geom_point(data = transformed_can_dat,
+             aes(x = lon.1, y = lat.1),
+             color = "slateblue",
+             size = 0.2)
+
+```
+
+This mapping function is weird and it's too hard to figure out how to add a legend here. Reds = 2 CL species, blues = 2 non-CL species. 
+
+

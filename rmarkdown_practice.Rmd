@@ -1,0 +1,71 @@
+---
+title: "R Markdown Practice"
+author: "Alex Faidiga"
+date: "January 20, 2020"
+output: html_document
+---
+## Code
+	 
+Pieces of code are called chunks. 
+	 
+```{r eval = TRUE}
+	print("This is a chunk.")
+```
+	 
+To suppress the code but still show the output, use echo = FALSE.
+	 
+```{r echo = FALSE}
+	print("This is another chunk.")
+```
+	 
+To suppress the output but still show the code, use results = "hide".
+	 
+```{r results = "hide"}
+	print("This is yet another chunk.")
+```
+	 
+You can include plots:
+	 
+```{r eval = TRUE}
+	plot(rnorm(50))
+```
+	 
+Code within text: 
+	 
+The square root of 1421 is `r sqrt(1421) `.
+	 
+## Formatting text 
+	 
+You can make the main text of the document *italicized* and **bold**, or create headers:
+	 
+# This
+## Is 
+### Rmarkdown
+#### Practice
+	 
+Create a break in the document using three stars:
+	 
+***
+	 
+Add quotes with a single greater-than symbol (>):
+	 
+>Hello world 
+	
+Make lists with bullet points using * and +:
+	 
+* Groceries
+	  + Milk
+	  + Eggs
+	  + Avocados
+	  
+Make tables with lines! 
+	 
+Plant   | Ranking
+--------|--------
+trees   | 1
+flowers | 2
+moss    | 3
+	 
+	
+
+

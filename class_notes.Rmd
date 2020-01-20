@@ -1,0 +1,40 @@
+---
+title: "Class notes"
+author: "Alex Faidiga"
+date: "January 20, 2020"
+output: html_document
+---
+##Week 1: setting up git and github
+
+What is this “README” thing? What is a .md file? Is a readme file created for every repository? 
+Why do I have both README.md and README.html files?
+What is the git “editor”?
+What is the difference between a project and a repository?
+What is the point of having an html file and an .rmd file?
+How can you view an html file once it’s in github, as if it was a webpage?
+
+Notes:
++ You can edit a file in R, in your computer’s terminal, or in the browser on GitHub and integrate the changes across all platforms.
++ .Rmd files are RMarkdown files.
+
+Why build phylogenies? Video
+
+phylogenies can be used for:
+    +	estimating extinction/speciation/diversification
+    +	formulating hypotheses (example of gene being predicted and induced)
+    +	testing hypotheses (example of asking which traits are important for diversification in certain groups)
+    +	 determining whether or not there are correlations between traits (leaf size and longevity in conifers and angiosperms—correlation is not there when accounting for phylogeny)
+
+PHLAWD
+
+* finds genes in genbank and builds trees for you 
+GBIF	
+* species distribution data
+
+
+
+
+
+
+
+

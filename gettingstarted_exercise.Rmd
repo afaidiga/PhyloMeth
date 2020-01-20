@@ -1,0 +1,37 @@
+---
+title: "gettingstarted_exercise"
+author: "Alex Faidiga"
+date: "January 20, 2020"
+output: html_document
+---
+```{r}
+2+3
+library(ape)
+plot(rcoal(5))
+```
+
+**MAKE THIS LINE BOLD**
+
+MAKE THE WORD *ITALIC* ITALICIZED
+
+```{r echo=FALSE}
+plot(density(rnorm(1000)))
+```
+
+### R exercise
+
+```{r}
+# Experience with coding.
+
+GetHowManyTrees <- function(ntaxa=10) {
+    result <- howmanytrees(ntaxa)
+    return(result)
+}
+
+GetHowManyTrees()
+```
+
+
+
+
+
