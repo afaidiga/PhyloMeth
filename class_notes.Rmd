@@ -6,30 +6,109 @@ output: html_document
 ---
 ##Week 1: setting up git and github
 
-What is this “README” thing? What is a .md file? Is a readme file created for every repository? 
-Why do I have both README.md and README.html files?
-What is the git “editor”?
-What is the difference between a project and a repository?
-What is the point of having an html file and an .rmd file?
-How can you view an html file once it’s in github, as if it was a webpage?
-
-Notes:
-+ You can edit a file in R, in your computer’s terminal, or in the browser on GitHub and integrate the changes across all platforms.
-+ .Rmd files are RMarkdown files.
+* You can edit a file in R, in your computer’s terminal, or in the browser on GitHub and integrate the changes across all platforms.
+* .Rmd files are RMarkdown files.
 
 Why build phylogenies? Video
 
 phylogenies can be used for:
-    +	estimating extinction/speciation/diversification
-    +	formulating hypotheses (example of gene being predicted and induced)
-    +	testing hypotheses (example of asking which traits are important for diversification in certain groups)
-    +	 determining whether or not there are correlations between traits (leaf size and longevity in conifers and angiosperms—correlation is not there when accounting for phylogeny)
+*	estimating extinction/speciation/diversification
+*formulating hypotheses (example of gene being predicted and induced)
+* testing hypotheses (example of asking which traits are important for diversification in certain groups)
+* determining whether or not there are correlations between traits (leaf size and longevity in conifers and angiosperms—correlation is not there when accounting for phylogeny)
 
 PHLAWD
-
 * finds genes in genbank and builds trees for you 
+
 GBIF	
 * species distribution data
+
+##Week 3
+###Tree terminology
+Trees can tell us about nested relationships between organisms, but we lose a lot of biology in looking simply at a tree representation (introgression, hybridization, etc.).
+
+**Branch** = edge
+
+**Internal node** = where different edges meet
+
+  * If all nodes have only two descendant branches, the tree is **bifurcating**, **fully resolved**, or **dichotomous**. Nodes with more branches are **polytomies.**
+  * **soft polytomies** are when we don't know why there are >2 descendants; **hard polytomies** are when the lineage actually simultaneously split into multiple taxa.
+  
+**Rooted trees** have nodes that represent the  most recent common ancestor (MRCA). Rooted trees show the direction of time.
+  * One way to root is to include an outgroup.
+  * Why does rooting matter? Depending on where we place the root, it could have different implications for the direction of change of different traits.
+  
+**Clade** = ancestor and all its descendants. (**Monophyletic** group)
+
+**Parahyletic group** = ancestor and some but not all of its descendants.
+  * dinosaurs not including birds
+  
+**Polyphyletic group** = taxa not sharing recent common ancestor, but obviously if you go back far enough you can find one
+
+**homology** = similarity due to shared ancestry
+
+**homoplasy** = similarity not due to common ancestry
+
+**plesiomorphy** = ancestral character state, in reference to another derived character state
+
+**apomorphy** = derived character state, in reference to another ancestral character state
+
+Why is the term "basal" problematic?
+  * Calling a taxon basal (toward the left of the tree) implies that it is more primitive or less evolutionarily advanced than taxa toward the right of the tree, but phylogenies represent nested relationships, not how advanced a taxon is. If we wanted to, we could rearrange the tree with different taxa and make it so that the more "advanced" taxon is on the left. 
+  
+###Tree space
+
+Why is searching for trees a difficult problem?
+
+  * The more taxa on a tree, the more possible trees... exponential growth! after 50 taxa, there are more possible trees than there are atoms in the universe!
+  
+  * It's hard to find the right tree when tree space is so large
+  
+  * When tree space is so large, the odds of finding the exact right tree are very small. Any tree will have some level of error.
+  
+###Likelihood vs. Bayes
+
+#####Coin flip
+
+Likelihood approach:
+
+  * first choose a model (binomial distribution)
+  
+  * assume that the coin has an innate probability of landing heads
+  
+  * we now have a model and our data 2 heads out of 3 tosses
+  
+  * the likelihood approach: **likelihood of the hypothesis given the data is proportional to the probability of the data given the hypothesis**
+  
+  * hypothesis is a given value for q, and data are 2 heads out of 3 tosses
+  
+  * we then plug into binomial formula, and we have the likelihood
+  
+  *the best estimate of q given likelihood approach is the value of q that maximizes the probability of the observed data.
+  
+  *so, the maximum likelihood estimate of q is 2/3, or the number of heads/tails.
+
+Limitations of likelihood approach:
+
+  * if we had more data, we would probably get a better estimate.
+  
+  * we have some innate assumption about coins (that they are fair), but we can't incorporate that into the analysis
+  
+  * a more natural result would be to get the prob. of the hypothesis given the data.
+  
+    + to get this probability, we can use Baye's rule:
+    
+      > P(hyp|data) = P(data|hyp)P(hyp)/sum(P(data|hyp)P(hyp))
+      
+    * hopefully, the more data you have, the less the prior matters.
+    
+**posterior probability** = Bayes' rule
+
+
+
+
+
+
 
 
 
