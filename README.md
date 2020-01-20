@@ -1,1 +1,1 @@
-# phylometh
+# Phylogenetic methods Spring 2020
