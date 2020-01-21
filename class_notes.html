@@ -246,20 +246,69 @@ summary {
 <ul>
 <li><p>if we had more data, we would probably get a better estimate.</p></li>
 <li><p>we have some innate assumption about coins (that they are fair), but we can’t incorporate that into the analysis</p></li>
-<li><p>a more natural result would be to get the prob. of the hypothesis given the data.</p>
-<ul>
-<li>to get this probability, we can use Baye’s rule:</li>
+<li><p>a more natural result would be to get the prob. of the hypothesis given the data.</p></li>
 </ul>
+</div>
+<div id="bayes-rule" class="section level4">
+<h4>Baye’s Rule:</h4>
+<p>Used to obtain the posterior probability from the likelihood and prior probability, or: probability of the hypothesis given the data.</p>
 <blockquote>
 <p>P(hyp|data) = P(data|hyp)P(hyp)/sum(P(data|hyp)P(hyp))</p>
 </blockquote>
-<ul>
-<li>hopefully, the more data you have, the less the prior matters.</li>
-</ul></li>
-</ul>
+<p>Hopefully, the more data you have, the less the prior matters.</p>
 <p><strong>posterior probability</strong> = Bayes’ rule</p>
 </div>
 </div>
+<div id="drummond-and-rambaut-2007.-beast-bayesian-evolutionary-analysis-by-sampling-trees" class="section level3">
+<h3>Drummond and Rambaut (2007). BEAST: Bayesian evolutionary analysis by sampling trees</h3>
+<p>Bayesian statistical framework allows for prior knowledge to be input in comination with information provided by the data.</p>
+<p><strong>Markov Chain Monte Carlo</strong>: “state of the art” method for phylogenetic reconstruction</p>
+<ul>
+<li><p>stochastic algorithm that produces sample-based estimates of a target distribution of choice</p></li>
+<li><p>target dist.: posterior distribution of a set of evolutionary parameters given a set of molecular sequences</p></li>
+</ul>
+<p>coalescent-based population genetics of microsatellites? based on the assumption of no recombination, selection, gene flow</p>
+<p>MCMC applied to central problem of co-estimation of phylogeny and sequence alignment?</p>
+<p>BEAST focuses on calibrated (rooted, time scale incorporated) trees.</p>
+<ul>
+<li><strong>molecular clock model</strong>: uniform rate of molecular evolution over the entire tree</li>
+<li>BEAST allows for <strong>relaxed molecular clock models</strong>, or models where the rate of molecular evolution is not assumed to be constant across all lineages</li>
+</ul>
+<p>In example section, they mention that the first 500 samples were discarded as burnin?</p>
+</div>
+<div id="lewis-2001.-phylogenetic-systematics-turns-over-a-new-leaf." class="section level3">
+<h3>Lewis (2001). Phylogenetic systematics turns over a new leaf.</h3>
+<p><strong>Bootstrapping</strong>: a statistical technique in which new data sets of the same size as the original are created by sampling randomly (and with replacement) from the original characters. It is assumed that, if the original n is sufficiently large, sampling from the sample population approximates the true underlying distribution. This allows us to calculate confidence intervals on phylogenies. Bootstrapping assumes that the original characters were sampled independently.</p>
+<p><strong>Likelihood</strong>: a quantity that is proportional to the probability of the data (or probability density, if the data are continuous-valued), given specific values for all parameters in the model. The likelihood function provides a means to estimate the parameters of the model. Parameter values that are associated with the global maximum ofthe likelihood function are termed maximum likelihood estimates (MLEs).</p>
+<p><strong>Optimality criterion</strong>: a rule used to decide which of two trees is best. Four optimality criteria are currently widely used:</p>
+<ul>
+<li><strong>Maximum parsimony</strong> – the tree requiring the fewest character state changes is the better of the two trees.</li>
+<li><strong>Maximum likelihood</strong> – the tree maximizing the likelihood under the assumed evolutionary model is better.</li>
+<li><strong>Minimum evolution</strong>– the tree having the smallest sum of branch lengths (estimated using ordinary least squares) is better.</li>
+<li><strong>Least squares</strong> – the tree showing the best fit between estimated pairwise distances and the corresponding pairwise distances obtained by summing paths through the tree is better.</li>
+</ul>
+<p>In phylogenetic applications, each step in a <strong>Markov chain Monte Carlo (MCMC)</strong> involves a random modification of the tree topology, a branch length or a parameter in the substitution model (e.g. substitution rate ratio). If the posterior that is computed for a proposed step is larger than that of the current tree topology and parameter values, the proposed step is taken.</p>
+<ul>
+<li><p>this allows one to explore parameter space with complex topologies</p></li>
+<li><p>it is mentioned several times that the topology is a parameter as well as branch lengths for each branch (2N-3 where N is the number of tips). How can topology be summarized with one parameter?</p></li>
+</ul>
+<p><strong>General time-reversible model</strong> of molecular evolution: allows unequal nucleotide frequencies as well as the six possible nucleotide transitions to occur at different rates.</p>
+<p><strong>discrete gamma method</strong> allows relative rates of nucleotide substitution to differ among sites. Relative rates are distributed according to gamma distribution where mean = 1 and variance = 1/a</p>
+<p><strong>codon models</strong> allow for the non-independence of nucleotide substitution rates within codons, and <strong>secondary structure models</strong> allow for non-independence among sites known to be correlated due to secondary strucure (ex. stem-loop structure in RNA that are associated with protein folding).</p>
+<ul>
+<li>example: in genes that encode proteins, the three nucleotide sites that form a single codon cannot evolve independently of one another if there is selection for a particular amino acid at the corresponding site in the polypeptide.</li>
+</ul>
+<p>Two traits are <strong>evolutionarily correlated</strong> if a change in state of one of the characters predisposes the other character to change state soon after. i.e., the two traits are correlated to a greater extent than expected from simply the phylogeny.</p>
+<ul>
+<li><p>example: evolution of feathers is correlated with the evolution of wings. If feathers did not appear first, wings may not have evolved</p></li>
+<li><p>can do a likelihood ratio test to calculate this probability</p></li>
+</ul>
+</div>
+</div>
+<div id="in-class-notes" class="section level2">
+<h2>In-class notes</h2>
+<p>introgression vs. hybridization introgression = excange of genes, while hybridization = production of a new species from it</p>
+<p>flat prior = all parameter estimates are equally likely. For coin, q=prob(heads); could be any value. When we collect data, we get a point estimate on the value of the parameter</p>
 </div>
 
 

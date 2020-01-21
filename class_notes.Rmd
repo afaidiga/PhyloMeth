@@ -95,23 +95,79 @@ Limitations of likelihood approach:
   * we have some innate assumption about coins (that they are fair), but we can't incorporate that into the analysis
   
   * a more natural result would be to get the prob. of the hypothesis given the data.
-  
-    + to get this probability, we can use Baye's rule:
-    
-      > P(hyp|data) = P(data|hyp)P(hyp)/sum(P(data|hyp)P(hyp))
-      
-    * hopefully, the more data you have, the less the prior matters.
+
+####Baye's Rule:
+
+Used to obtain the posterior probability from the likelihood and prior probability, or: probability of the hypothesis given the data. 
+
+>P(hyp|data) = P(data|hyp)P(hyp)/sum(P(data|hyp)P(hyp))
+
+Hopefully, the more data you have, the less the prior matters.
     
 **posterior probability** = Bayes' rule
 
+###Drummond and Rambaut (2007). BEAST: Bayesian evolutionary analysis by sampling trees
+
+Bayesian statistical framework allows for prior knowledge to be input in comination with information provided by the data.
+
+**Markov Chain Monte Carlo**: "state of the art" method for phylogenetic reconstruction
+
+  * stochastic algorithm that produces sample-based estimates of a target distribution of choice
+  
+  * target dist.: posterior distribution of a set of evolutionary parameters given a set of molecular sequences
+
+coalescent-based population genetics of microsatellites? based on the assumption of no recombination, selection, gene flow
+
+MCMC applied to central problem of co-estimation of phylogeny and sequence alignment?
+
+BEAST focuses on calibrated (rooted, time scale incorporated) trees.
+
+  * **molecular clock model**: uniform rate of molecular evolution over the entire tree
+  * BEAST allows for **relaxed molecular clock models**, or models where the rate of molecular evolution is not assumed to be constant across all lineages
+  
+In example section, they mention that the first 500 samples were discarded as burnin?
+
+###Lewis (2001). Phylogenetic systematics turns over a new leaf.
+
+**Bootstrapping**: a statistical technique in which new data sets of the same size as the original are created by sampling randomly (and with replacement) from the original characters. It is assumed that, if the original n is sufficiently large, sampling from the sample population approximates the true underlying distribution. This allows us to calculate confidence intervals on phylogenies. Bootstrapping assumes that the original characters were sampled independently.
+
+**Likelihood**: a quantity that is proportional to the probability of the data (or probability density, if the data are continuous-valued), given specific values for all parameters in the model. The likelihood function provides a means to estimate the parameters of the model. Parameter values that are associated with the global maximum ofthe likelihood function are termed maximum likelihood estimates (MLEs).
+
+**Optimality criterion**: a rule used to decide which of two trees is best. Four optimality criteria are currently widely used: 
+
+  * **Maximum parsimony** – the tree requiring the fewest character state changes is the better of the two trees.
+  * **Maximum likelihood** – the tree maximizing the likelihood under the assumed evolutionary model is better.
+  * **Minimum evolution**– the tree having the smallest sum of branch lengths (estimated using ordinary least squares) is better.
+  * **Least squares** – the tree showing the best fit between estimated pairwise distances and the corresponding pairwise distances obtained by summing paths through the tree is better.
 
 
+In phylogenetic applications, each step in a **Markov chain Monte Carlo (MCMC)** involves a random modification of the tree topology, a branch length or a parameter in the substitution model (e.g. substitution rate ratio). If the 
+posterior that is computed for a proposed step is larger than that of the current tree topology and parameter values, the proposed step is taken.
 
+  * this allows one to explore parameter space with complex topologies
+  
+  * it is mentioned several times that the topology is a parameter as well as branch lengths for each branch (2N-3 where N is the number of tips). How can topology be summarized with one parameter?
 
+**General time-reversible model** of molecular evolution: allows unequal nucleotide frequencies as well as the six possible nucleotide transitions to occur at different rates.
 
+**discrete gamma method** allows relative rates of nucleotide substitution to differ among sites. Relative rates are distributed according to gamma distribution where mean = 1 and variance = 1/a
 
+**codon models** allow for the non-independence of nucleotide substitution rates within codons, and **secondary structure models** allow for non-independence among sites known to be correlated due to secondary strucure (ex. stem-loop structure in RNA that are associated with protein folding).
 
+  * example: in genes that encode proteins, the three nucleotide sites that form a single codon cannot evolve independently of one another if there is selection for a particular amino acid at the corresponding site in the polypeptide.
 
+Two traits are **evolutionarily correlated** if a change in state of one of the characters predisposes the other character to change state soon after. i.e., the two traits are correlated to a greater extent than expected from simply the phylogeny.
+
+  * example: evolution of feathers is correlated with the evolution of wings. If feathers did not appear first, wings may not have evolved 
+  
+  * can do a likelihood ratio test to calculate this probability 
+  
+## In-class notes
+
+introgression vs. hybridization
+introgression = excange of genes, while hybridization = production of a new species from it 
+
+flat prior = all parameter estimates are equally likely. For coin, q=prob(heads); could be any value. When we collect data, we get a point estimate on the value of the parameter
 
 
 
