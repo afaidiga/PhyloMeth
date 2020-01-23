@@ -169,7 +169,11 @@ introgression = excange of genes, while hybridization = production of a new spec
 
 flat prior = all parameter estimates are equally likely. For coin, q=prob(heads); could be any value. When we collect data, we get a point estimate on the value of the parameter
 
+## Felsenstein 1978: Cases in which parsimony or compatibility methods will be positively misleading
 
+The more data you have, the more certain you are in your wrong tree
+
+Parsimony score = number of changes on the tree to reach a given character state for each tip
 
 
 
