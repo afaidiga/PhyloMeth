@@ -1,0 +1,126 @@
+
+
+This is RAxML version 8.2.12 released by Alexandros Stamatakis on May 2018.
+
+With greatly appreciated code contributions by:
+Andre Aberer      (HITS)
+Simon Berger      (HITS)
+Alexey Kozlov     (HITS)
+Kassian Kobert    (HITS)
+David Dao         (KIT and HITS)
+Sarah Lutteropp   (KIT and HITS)
+Nick Pattengale   (Sandia)
+Wayne Pfeiffer    (SDSC)
+Akifumi S. Tanabe (NRIFS)
+Charlie Taylor    (UF)
+
+
+Alignment has 40 distinct alignment patterns
+
+Proportion of gaps and completely undetermined characters in this alignment: 0.00%
+
+RAxML rapid hill-climbing mode
+
+Using 1 distinct models/data partitions with joint branch length optimization
+
+
+Executing 20 inferences on the original alignment using 20 distinct randomized MP trees
+
+All free model parameters will be estimated by RAxML
+GAMMA model of rate heterogeneity, ML estimate of alpha-parameter
+
+GAMMA Model parameters will be estimated up to an accuracy of 0.1000000000 Log Likelihood units
+
+Partition: 0
+Alignment Patterns: 40
+Name: No Name Provided
+DataType: AA
+Substitution Matrix: WAG
+Using fixed base frequencies
+
+
+
+
+RAxML was called as follows:
+
+./raxmlHPC -m PROTGAMMAWAG -p 12345 -s protein.phy -# 20 -n T76 
+
+
+Partition: 0 with name: No Name Provided
+Base frequencies: 0.087 0.044 0.039 0.057 0.019 0.037 0.058 0.083 0.024 0.048 0.086 0.062 0.020 0.038 0.046 0.070 0.061 0.014 0.035 0.071 
+
+Inference[0]: Time 1.285336 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[1]: Time 1.811829 GAMMA-based likelihood -434.406911, best rearrangement setting 5
+alpha[0]: 0.621040 
+Inference[2]: Time 1.816088 GAMMA-based likelihood -434.406911, best rearrangement setting 5
+alpha[0]: 0.621040 
+Inference[3]: Time 1.289846 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[4]: Time 1.326892 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[5]: Time 1.815346 GAMMA-based likelihood -434.406911, best rearrangement setting 5
+alpha[0]: 0.621040 
+Inference[6]: Time 1.849911 GAMMA-based likelihood -434.406911, best rearrangement setting 5
+alpha[0]: 0.621040 
+Inference[7]: Time 1.839290 GAMMA-based likelihood -434.406911, best rearrangement setting 5
+alpha[0]: 0.621040 
+Inference[8]: Time 1.290726 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[9]: Time 1.370220 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[10]: Time 1.261089 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[11]: Time 1.336001 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[12]: Time 1.270466 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[13]: Time 2.043821 GAMMA-based likelihood -434.406911, best rearrangement setting 5
+alpha[0]: 0.621040 
+Inference[14]: Time 1.483247 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[15]: Time 1.255148 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[16]: Time 1.410434 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[17]: Time 1.267166 GAMMA-based likelihood -434.406886, best rearrangement setting 5
+alpha[0]: 0.619289 
+Inference[18]: Time 2.453365 GAMMA-based likelihood -434.409582, best rearrangement setting 5
+alpha[0]: 0.600970 
+Inference[19]: Time 1.758938 GAMMA-based likelihood -434.406911, best rearrangement setting 5
+alpha[0]: 0.621040 
+
+
+Conducting final model optimizations on all 20 trees under GAMMA-based models ....
+
+Inference[0] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.0
+Inference[1] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.1
+Inference[2] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.2
+Inference[3] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.3
+Inference[4] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.4
+Inference[5] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.5
+Inference[6] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.6
+Inference[7] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.7
+Inference[8] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.8
+Inference[9] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.9
+Inference[10] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.10
+Inference[11] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.11
+Inference[12] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.12
+Inference[13] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.13
+Inference[14] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.14
+Inference[15] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.15
+Inference[16] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.16
+Inference[17] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.17
+Inference[18] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.18
+Inference[19] final GAMMA-based Likelihood: -434.406886 tree written to file /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_result.T76.RUN.19
+
+
+Starting final GAMMA-based thorough Optimization on tree 18 likelihood -434.406886 .... 
+
+Final GAMMA-based Score of best tree -434.406886
+
+Program execution info written to /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_info.T76
+Best-scoring ML tree written to: /Users/alexandrafaidiga/Desktop/phylometh/RAxML/RAxML_bestTree.T76
+
+Overall execution time: 31.717284 secs or 0.008810 hours or 0.000367 days
+

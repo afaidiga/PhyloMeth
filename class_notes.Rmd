@@ -175,5 +175,24 @@ The more data you have, the more certain you are in your wrong tree
 
 Parsimony score = number of changes on the tree to reach a given character state for each tip
 
+## 1/24 RAxML tutorial
 
+I can't execute the raxml command without typing ./ first. I tried copying the raxml files to my directory like the tutorial said but it's not working. 
+
+The raxml result files that are output cannot be read in Dendroscpe as they are-- I have to convert them to .txt files first. Is there a way to directly write them to .txt files?
+
+**what does this mean:**
+"As starting trees RAxML uses randomized stepwise addition parsimony trees, i.e., it will not generate the same starting tree every time. You can either force it by providing a fixed random number seed or by passing a starting tree. I fyou want to conduct multiple searches for the best tree you can type _______ and raxml will carry out 20 ML searches on 20 randomized stepwise addition parsimony trees."
+
+**Under the bootstrapping section:**
+"This call will produce to output files that can be visualized with Dendroscope:  RAxML_bipartitions.T15 (support values assigned to nodes) and RAxML_bipartitionsBranchLabels.T15 (support values assigned to branches of the tree). Note that, for unrooted trees the correct representation is actually the one with support values assigned to branches and not nodes of the tree!"
+
+I'm still a little confused on why this is the case or what the difference is between the bootstrap values being on the nodes vs. branches
+
+What is a "core" on my computer :(
+
+**partitioning**: Partitioning is a commonly used method in phylogenetics that aims to accommodate variation in substitution patterns among sites.
+
+When you are passing trees to RAxML it usually expects them to be bifurcating. The rationale for this is that a multifurcating tree actually represents a set of bifurcating trees and it is unclear how to properly resolve the multifurcations in general. Also, for computing the likelihood of a tree we need a bifurcating tree, therefore resolving multi-furcations, either at random or in some more clever way is a necessary prerequisite for computing likelihood scores.
+  * is that actually the case, that multifurcations represent a set of bifurcating trees? or is that just what this author thinks?Also, why do we need strictly bifurcating trees to do max likelihood 
 
