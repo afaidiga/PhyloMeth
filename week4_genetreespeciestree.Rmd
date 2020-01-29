@@ -1,0 +1,63 @@
+---
+title: 'Week 4: Gene Tree Species Tree'
+author: "Alex Faidiga"
+date: "January 29, 2020"
+output: html_document
+---
+
+```{r eval = TRUE}
+devtools::install_github("bomeara/phybase")
+```
+
+```{r eval = TRUE}
+library(rotl)
+library(ape)
+phy <- get_study_tree("ot_485", "tree1")
+plot(phy, cex=0.3)
+```
+
+```{r}
+library(geiger)
+phy <- drop.random(phy, Ntip(phy) - 10)
+plot(phy)
+axisPhylo()
+```
+
+```{r}
+library(phybase)
+gene.tree <- phybase::sim.coaltree.phylo(phy, pop.size=1e-12)
+plot(gene.tree)
+```
+
+```{r}
+library(phytools)
+plot(cophylo(phy, gene.tree, cbind(sort(phy$tip.label), sort(gene.tree$tip.label))))
+```
+
+```{r}
+species.tree <- rcoal(7)
+species.tree$edge.length <- species.tree$edge.length / (10*max(branching.times(species.tree))) #why this step?
+gene.tree <- phybase::sim.coaltree.phylo(species.tree)
+plot(cophylo(species.tree, gene.tree, cbind(sort(species.tree$tip.label), sort(gene.tree$tip.label))))
+```
+
+I'm not sure if I fully understand why the first gene-species trees match but this one doesn't. Is it only relating to branch lengths? Also I'm not sure if I understand how sim.coaltree.phylo is simulating a gene tree on the existing species tree...
+
+```{r}
+tip.rows <- which(species.tree$edge[,2]<=Ntip(species.tree))
+species.tree2 <- species.tree
+species.tree2$edge.length[tip.rows] <- 100 + species.tree2$edge.length[tip.rows]
+gene.tree2 <- phybase::sim.coaltree.phylo(species.tree2)
+plot(cophylo(species.tree2, gene.tree2, cbind(sort(species.tree2$tip.label), sort(gene.tree2$tip.label))))
+```
+
+```{r}
+species.tree2.clado <- compute.brlen(species.tree2)
+gene.tree2.clado <- compute.brlen(gene.tree2)
+plot(cophylo(species.tree2.clado, gene.tree2.clado, cbind(sort(species.tree2.clado$tip.label),
+sort(gene.tree2.clado$tip.label))))
+```
+
+
+
+

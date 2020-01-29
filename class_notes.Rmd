@@ -195,4 +195,14 @@ What is a "core" on my computer :(
 
 When you are passing trees to RAxML it usually expects them to be bifurcating. The rationale for this is that a multifurcating tree actually represents a set of bifurcating trees and it is unclear how to properly resolve the multifurcations in general. Also, for computing the likelihood of a tree we need a bifurcating tree, therefore resolving multi-furcations, either at random or in some more clever way is a necessary prerequisite for computing likelihood scores.
   * is that actually the case, that multifurcations represent a set of bifurcating trees? or is that just what this author thinks?Also, why do we need strictly bifurcating trees to do max likelihood 
+  
+##1/28
+##coalescence 
 
+small group of salamanders vs group of all salamanders; both can have issues with coalescence of gene trees not matching species tree because coalesence can occur at any point in time. population size is more likely to affect it though
+
+time to coalescense is faster at a lower effective population size 
+
+the more generations, the greater the probability of coalescing 
+
+anomaly zone=the majority of the gene trees have a history different from the species tree
