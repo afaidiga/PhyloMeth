@@ -206,3 +206,27 @@ time to coalescense is faster at a lower effective population size
 the more generations, the greater the probability of coalescing 
 
 anomaly zone=the majority of the gene trees have a history different from the species tree
+
+**question**: rcoal() and rtree() both build random tree, but the help package says that rcoal() builds coalescent trees. Why are these random trees considered coalescent? because all of the tips are at one time point and merge back to a common ancestor?
+
+bootstrapping measures the robustness of the data to resampling, but not necessarily the accuracy of the model. 
+  * this is why large sample sizes are not great for bootstrapping-- you will probably get the same answer 
+  
+####Heled and Drummond 
+simulated data with their prior (think of doing a coin flip simuation where p=0.3, then using that as a prior for a bayesian analysis... you will get the same answer)
+
+
+###Hahn 2015
+
+**adaptive introgression**: the traits that tend to get in and spread are usually adaptive 
+  * this is because when a new gene enters the population, its frequency is low and tehrefore not likely to get passed on; so if it does, it's probably adaptive 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
