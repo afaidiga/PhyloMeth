@@ -310,6 +310,87 @@ summary {
 <p>introgression vs. hybridization introgression = excange of genes, while hybridization = production of a new species from it</p>
 <p>flat prior = all parameter estimates are equally likely. For coin, q=prob(heads); could be any value. When we collect data, we get a point estimate on the value of the parameter</p>
 </div>
+<div id="felsenstein-1978-cases-in-which-parsimony-or-compatibility-methods-will-be-positively-misleading" class="section level2">
+<h2>Felsenstein 1978: Cases in which parsimony or compatibility methods will be positively misleading</h2>
+<p>The more data you have, the more certain you are in your wrong tree</p>
+<p>Parsimony score = number of changes on the tree to reach a given character state for each tip</p>
+</div>
+<div id="raxml-tutorial" class="section level2">
+<h2>1/24 RAxML tutorial</h2>
+<p>I can’t execute the raxml command without typing ./ first. I tried copying the raxml files to my directory like the tutorial said but it’s not working.</p>
+<p>The raxml result files that are output cannot be read in Dendroscpe as they are– I have to convert them to .txt files first. Is there a way to directly write them to .txt files?</p>
+<p><strong>what does this mean:</strong> “As starting trees RAxML uses randomized stepwise addition parsimony trees, i.e., it will not generate the same starting tree every time. You can either force it by providing a fixed random number seed or by passing a starting tree. I fyou want to conduct multiple searches for the best tree you can type _______ and raxml will carry out 20 ML searches on 20 randomized stepwise addition parsimony trees.”</p>
+<p><strong>Under the bootstrapping section:</strong> “This call will produce to output files that can be visualized with Dendroscope: RAxML_bipartitions.T15 (support values assigned to nodes) and RAxML_bipartitionsBranchLabels.T15 (support values assigned to branches of the tree). Note that, for unrooted trees the correct representation is actually the one with support values assigned to branches and not nodes of the tree!”</p>
+<p>I’m still a little confused on why this is the case or what the difference is between the bootstrap values being on the nodes vs. branches</p>
+<p>What is a “core” on my computer :(</p>
+<p><strong>partitioning</strong>: Partitioning is a commonly used method in phylogenetics that aims to accommodate variation in substitution patterns among sites.</p>
+<p>When you are passing trees to RAxML it usually expects them to be bifurcating. The rationale for this is that a multifurcating tree actually represents a set of bifurcating trees and it is unclear how to properly resolve the multifurcations in general. Also, for computing the likelihood of a tree we need a bifurcating tree, therefore resolving multi-furcations, either at random or in some more clever way is a necessary prerequisite for computing likelihood scores. * is that actually the case, that multifurcations represent a set of bifurcating trees? or is that just what this author thinks?Also, why do we need strictly bifurcating trees to do max likelihood</p>
+<div id="section" class="section level3">
+<h3>1/28</h3>
+<div id="coalescence" class="section level4">
+<h4>coalescence</h4>
+<p>small group of salamanders vs group of all salamanders; both can have issues with coalescence of gene trees not matching species tree because coalesence can occur at any point in time. population size is more likely to affect it though</p>
+<p>time to coalescense is faster at a lower effective population size</p>
+<p>the more generations, the greater the probability of coalescing</p>
+<p>anomaly zone=the majority of the gene trees have a history different from the species tree</p>
+<p><strong>question</strong>: rcoal() and rtree() both build random tree, but the help package says that rcoal() builds coalescent trees. Why are these random trees considered coalescent? because all of the tips are at one time point and merge back to a common ancestor?</p>
+<p>bootstrapping measures the robustness of the data to resampling, but not necessarily the accuracy of the model.</p>
+<ul>
+<li>this is why large sample sizes are not great for bootstrapping– you will probably get the same answer</li>
+</ul>
+</div>
+<div id="heled-and-drummond" class="section level4">
+<h4>Heled and Drummond</h4>
+<p>simulated data with their prior (think of doing a coin flip simuation where p=0.3, then using that as a prior for a bayesian analysis… you will get the same answer)</p>
+</div>
+<div id="hahn-2015" class="section level4">
+<h4>Hahn 2015</h4>
+<p><strong>adaptive introgression</strong>: the traits that tend to get in and spread are usually adaptive</p>
+<ul>
+<li>this is because when a new gene enters the population, its frequency is low and tehrefore not likely to get passed on; so if it does, it’s probably adaptive</li>
+</ul>
+</div>
+</div>
+<div id="section-1" class="section level3">
+<h3>2/4/20</h3>
+<p><strong>mutation rate</strong>: rate at which DNA is changing <strong>substitution rate</strong>: rate at which DNA is changing across an entire population</p>
+<p>if an allele is adaptive, the chance that it will go to fixation is higher. if maladaptove, lower.</p>
+<p>poisson distributions are used for discrete count data of rates.</p>
+<ul>
+<li>rate*time. 2 bees per hour. 5 car crashes per mile.</li>
+</ul>
+<div id="sanderson" class="section level4">
+<h4>Sanderson</h4>
+<p>attempting to solve the complex issue of different rates on different branches</p>
+<p>this is an issue because if each branch has its own rate, there will be more parameters in the model than there are data. In their method, they allowed some branch lengths to be the same based on how extreme the difference is?</p>
+</div>
+</div>
+<div id="section-2" class="section level3">
+<h3>2/6/20</h3>
+<p>parametric methods assume an underlying distribution that can be characterized with parameters (e.g. maximum likelihood)</p>
+<p>BEAST allows parameters to be “linked”, which essentially just means that you can set parameters for different genes/clades etc to be the same and some to be different.</p>
+<p>RAxML doesnt have the capability to date trees, but you can use the output from it as a prior for BEAST and not allow it to change the tree topology, but allow it to change branch lengths.</p>
+<p><strong>Instertion-deletion model:</strong> “multiple sequence alignment” under an insertion-deletion model basically means that you have mutiple sequences, and when there are “gaps” of amino acids that don’t match, it could be an insterion or deletion. So you would use max likelihood to find the most probable alignment based on that model. BEAST allows you to estimate the alignment and the phylogeny simultaneously with MCMC, meaning that it will change the alignment, calculate likelihood, change the tree, calculate the likelihood, etc. until it finds the max likelihood estimate of both.</p>
+<p>Using BEAST and using uncorrelated rate models can still cause you to incorrectly date trees</p>
+</div>
+<div id="section-3" class="section level3">
+<h3>2/11/20</h3>
+<p>markov chain process: memoryless, doesnt matter where you came from, only where you are</p>
+<p>For ancestral state reconstruction, we can build a rate matrix with the probability of going from one character state to another. Then, we can set different transtiitons to zero (build different models) and test which model fits the data (tip character states) the best, to predict probabilities of transitioning states.</p>
+<p>To constrain by time, multiply the matrix by t (ex. rate of changing from A to B in 100 million years). When you exponentiate this matrix, you now havea probability transition matrix (probability of changing from A to B in 100 million years)</p>
+<p>From this basic rate matrix mode, we can:</p>
+<ul>
+<li>test hypotheses about rates for a single character</li>
+<li>test hypotheses about correlations between characters (do they evolve at the same rate?)</li>
+<li>infer trees</li>
+<li>reconstruct ancestral character states</li>
+</ul>
+<div id="pagel-1999" class="section level4">
+<h4>Pagel (1999)</h4>
+<p>how do you decide the weight of two different character states at the root of the phylogeny to do ancestral state reconstruction? One way is to do the frequency of each phenotype at the tips.</p>
+</div>
+</div>
+</div>
 
 
 

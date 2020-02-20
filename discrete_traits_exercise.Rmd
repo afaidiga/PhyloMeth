@@ -1,0 +1,162 @@
+---
+title: "Discrete characters exercise"
+author: "Alex Faidiga"
+date: "February 17, 2020"
+output: html_document
+---
+
+```{r packages, include = FALSE}
+library(geiger)
+library(rotl)
+library(ape)
+library(phytools)
+```
+
+Obtain fragaria tree from Tree of Life:
+```{r fragaria tree of life, eval = FALSE}
+fragaria.id <- tnrs_match_names("fragaria")$ott_id
+frag.tree <- tol_subtree(ott_id=fragaria.id)
+plot.phylo(frag.tree, type="phylogram", cex=0.8)
+
+frag.data <- read.csv("fragaria_dat.csv", stringsAsFactors = FALSE, row.names = 1) #have to have genus and species as one string and the species to be row names in the data frame for treedata() to work later
+```
+
+Clean data to eliminate species that are not present in the data set or in the tree:
+```{r fragaria data cleaning, eval = FALSE}
+clean_data <- function(phy, data) {
+  phy$tip.label <- strip_ott_ids(phy$tip.label, remove_underscores = T) #renames the tips of the tree by removing the ott id and removing underscores so that it can be matched with species names in the data frame
+  treedata(phy, data, sort=TRUE, warnings=TRUE)
+}
+
+clean_tree <- clean_data(frag.tree, frag.data)$phy
+plot.phylo(clean_tree, type="phylogram", cex=1)
+
+```
+
+The only species that match create a tree that only has one single polytomy. 
+
+Create a function to search for trees from tree of life:
+
+```{r tree of life search function, eval = FALSE}
+my_tree <- function(taxon){
+  taxon.id <- tnrs_match_names(taxon)$ott_id
+  taxon.tree <- tol_subtree(ott_id=taxon.id)
+  plot.phylo(taxon.tree, type="fan", cex=0.2)
+  print(taxon.id)
+}
+
+my_tree("clematis")
+
+clem_data <- read.csv("clematis_dat.csv", stringsAsFactors = FALSE) #have to have genus and species as one string and the species to be row names in the data frame for treedata() to work later
+head(clem_data)
+clem_data$gen_spec = paste(clem_data$genus, clem_data$species)
+clem_data2 <- data.frame(clem_data$gen_spec, clem_data$trait, row.names = 1)
+
+head(clem_data2)
+```
+
+
+Clean the data as above:
+
+```{r clematis data cleaning, eval = FALSE}
+clean_data <- function(phy, data) {
+  phy$tip.label <- strip_ott_ids(phy$tip.label, remove_underscores = T) #renames the tips of the tree by removing the ott id and removing underscores so that it can be matched with species names in the data frame
+  treedata(phy, data, sort=TRUE, warnings=TRUE)
+}
+
+clematis.id <- tnrs_match_names("clematis")$ott_id
+clem.tree <- tol_subtree(ott_id=clematis.id)
+  
+matching_tree <- clean_data(clem.tree, clem_data2)
+
+plot.phylo(matching_tree)
+length(matching_tree$tiplabel)
+
+```
+ 
+This is a pain, moving on to using Smith and Brown's (2017) huge tree of angiosperms downloaded from https://github.com/FePhyFoFum/big_seed_plant_trees/releases.
+
+I'll create a function that isolates a clade from the giant tree by identifying the node with the MRCA of two species provided to the function. 
+
+```{r viola tree}
+
+huge_tree <- read.tree("ALLMB.tre")
+
+clade_finder <- function(species1, species2){
+  viola_node<-fastMRCA(huge_tree,species1,species2)   #identifies the most recent node where these two species shared a recent common ancestor 
+  viola_clade<-extract.clade(huge_tree, viola_node) #extracts and creates a new tree for a clade based on the MRCA node identified  
+plot.phylo(viola_clade, cex = 0.3, type = "fan")
+print(Ntip(viola_clade))
+}
+
+clade_finder("Viola_pubescens", "Viola_rostrata")
+
+```
+
+Now I have a clade of violets, but it's not necessarily a meaningful clade. I just wanted to trim down the tree to a reasonable size. Since I'm waiting to get a data file from the TRY plant traits database, I'll make up random data for now:
+
+```{r viola tree and data}
+
+viola_node<-fastMRCA(huge_tree, "Viola_pubescens", "Viola_rostrata")   
+viola_clade<-extract.clade(huge_tree, viola_node)
+
+species_list <- viola_clade$tip.label
+viola_growthform <- rbinom(n=79, size=1, prob=0.3) #let's pretend 1=caulescent and 0=acaulescent
+
+viola_data <- data.frame(species_list, viola_growthform, row.names = 1)
+
+```
+
+It’s critically important to LOOK at what you have. Are there weird values? Has the match between taxa and state gone correctly? Do you think you have binary data, but there’s actually only state 1? Especially as data sets grow (yay), and are assembled using scripts rather than by error-prone, non-reproducable hands (double yay), scientists are increasingly less likely to deeply look at our data. That’s bad – don’t be that person.
+
+```{r data visualization function}
+VisualizeData <- function(phy, data) {
+  fmode<-as.factor(setNames(data[,1],rownames(data)))
+  trait1 <- unique(data[,1])[1]
+  trait2 <- unique(data[,1])[2]
+  dotTree(phy, fmode, colors=setNames(c("blue","red"),
+    c(paste(trait1), paste(trait2))),ftype="i",fsize=0.3) #plot the discrete character on the phylogeny
+}
+
+VisualizeData(viola_clade, viola_data)
+
+#test with another data set:
+eel_tree<-read.tree("elopomorph.txt")
+eel_data<-read.csv("elopomorph.csv",row.names=1)
+
+VisualizeData(eel_tree, eel_data)
+#yay! it works!
+
+```
+
+**NOTE: this function works for data frames where each row name is a species and there is a column for discrete trait data, where each species has a given value for that trait. Trait value can be binary or a string.**
+
+First, let’s use parsimony to look at ancestral states:
+
+```{r eval = FALSE}
+cleaned.discrete.phyDat <- phangorn::phyDat(viola_data, type="USER", levels = c(1,0)) #phyDat is a data format used by phangorn
+anc.p <- phangorn::ancestral.pars(tree, cleaned.discrete.phyDat)
+plotAnc(tree, anc.p, 1)
+```
+
+Do you see uncertainty? What does it mean?
+
+Now, plot the likelihood estimates.
+
+```{r eval = FALSE}
+anc.ml <- ancestral.pml(pml(tree, cleaned.discrete.phyDat), type="ml")
+plotAnc(tree, anc.ml, 1)
+```
+
+How does this differ from parsimony?
+
+Why does it differ from parsimony?
+
+What does uncertainty mean?
+
+Now, to the biological questions. For many of these, corHMM will be a useful package. Do the following analyses:
+
+How can you estimate transition rates between states? Do it.
+How could you examine if transition rates are equal?
+Think about the Lewis (2001) MKV model. Are your traits all variable? Will using this make sense for your data? Try using it. Do results change?
+How could you test order of state evolution?

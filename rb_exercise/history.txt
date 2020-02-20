@@ -1,0 +1,73 @@
+cytb <- readDiscreteCharacterData("data/bears_cytb.nex")
+n_taxa <- cytb.size()
+taxa <- cytb.taxa()
+moves    = VectorMoves()
+monitors = VectorMonitors()
+speciation_rate ~ dnExponential(10)
+extinction_rate ~ dnExponential(10)
+moves.append( mvScale(speciation_rate, lambda=0.5,tune=true,weight=3.0) )
+diversification := speciation_rate - extinction_rate
+turnover := extinction_rate/speciation_rate
+rho <- 1.0
+extant_mrca <- 1.0
+tree_dist = dnBDP(lambda=speciation_rate, mu=extinction_rate, rho=rho, rootAge=extant_mrca, samplingStrategy="uniform", condition="nTaxa", taxa=taxa)
+tree_dist = dnBDP(lambda=speciation_rate, mu=extinction_rate, rho=rho, rootAge = extant_mrca, samplingStrategy = "uniform", condition = "nTaxa", taxa=taxa)
+clade_ursinae = clade("Melursus_ursinus", "Ursus_arctos", "Ursus_maritimus", 
+                  "Helarctos_malayanus", "Ursus_americanus", "Ursus_thibetanus")
+constraints=v(clade_ursinae)
+timetree ~ dnConstrainedTopology(tree_dist, constraints=constraints)
+moves.append( mvNarrow(timetree, weight=n_taxa) )
+moves.append( mvFNPR(timetree, weight=n_taxa/4.0) )
+moves.append( mvNodeTimeSlideUniform(timetree, weight=n_taxa) )
+moves.append( mvSubtreeScale(timetree, weight=n_taxa/5.0) )
+age_ursinae := tmrca(timetree, clade_ursinae)
+branch_rates ~ dnExponential(10.0)
+moves.append( mvScale(branch_rates,lambda=0.5,tune=true,weight=3.0) )
+# Both the stationary frequencies and exchangeability rates #
+# are drawn from uniform Dirichlet distributions #
+# First the stationary frequencies #
+sf_hp <- v(1,1,1,1)
+sf ~ dnDirichlet(sf_hp)
+# Then the exchangeability rates #
+er_hp <- v(1,1,1,1,1,1)
+er ~ dnDirichlet(er_hp)
+moves.append( mvBetaSimplex(er, alpha=10.0, weight=2.0) )
+moves.append( mvBetaSimplex(sf, alpha=10.0, weight=3.0) )
+# Create the matrix #
+Q_cytb := fnGTR(er,sf)
+# Create a discretized gamma distribution of rate categories  #
+# the shape parameter is drawn from an uniform prior #
+alpha_cytb ~ dnUniform( 0.0, 1E6 )
+alpha_cytb.setValue( 1.0 )
+moves.append( mvScale(alpha_cytb, lambda=0.5,tune=true, weight=2.0) )
+rates_cytb := fnDiscretizeGamma( alpha_cytb, alpha_cytb, 4 )
+# Create the substitution model and clamp with our observed DNA data #
+phySeq ~ dnPhyloCTMC(tree=timetree, Q=Q_cytb, siteRates=rates_cytb, branchRates=branch_rates, type="DNA")
+phySeq.clamp(cytb)
+source("scripts/tree_BD.Rev") # BD tree prior
+source("scripts/clock_global.Rev") # Global clock model
+source("scripts/sub_GTRG.Rev") # Molecular substitution model (GTR+G)
+######## 
+# MCMC #
+########
+# initialize the model object #
+mymodel = model(sf)AbstractHomologousDiscreteCharacterData
+# Create a vector of monitors #
+# 1. for the full model #
+monitors.append( mnModel(filename="output/bears_global.log", printgen=10) )
+# 2. the tree #
+monitors.append( mnFile(filename="output/bears_global.trees", printgen=10, timetree) )
+# 3. and a few select parameters to be printed to the screen #
+monitors.append( mnScreen(printgen=100, extant_mrca, diversification) )
+# Initialize the MCMC object #
+mymcmc = mcmc(mymodel, monitors, moves, nruns=2, combine="mixed")
+# Run the MCMC #
+mymcmc.run(generations=20000, tuningInterval=200)
+mymodel = model(sf)
+monitors.append( mnModel(filename="output/bears_global.log", printgen=10) )
+monitors.append( mnFile(filename="output/bears_global.trees", printgen=10, timetree) )
+monitors.append( mnScreen(printgen=100, extant_mrca, diversification) )
+mymcmc = mcmc(mymodel, monitors, moves, nruns=2, combine="mixed")
+mymcmc.run(generations=20000, tuningInterval=200)
+Q()
+q()

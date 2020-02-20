@@ -196,8 +196,8 @@ What is a "core" on my computer :(
 When you are passing trees to RAxML it usually expects them to be bifurcating. The rationale for this is that a multifurcating tree actually represents a set of bifurcating trees and it is unclear how to properly resolve the multifurcations in general. Also, for computing the likelihood of a tree we need a bifurcating tree, therefore resolving multi-furcations, either at random or in some more clever way is a necessary prerequisite for computing likelihood scores.
   * is that actually the case, that multifurcations represent a set of bifurcating trees? or is that just what this author thinks?Also, why do we need strictly bifurcating trees to do max likelihood 
   
-##1/28
-##coalescence 
+###1/28
+####coalescence 
 
 small group of salamanders vs group of all salamanders; both can have issues with coalescence of gene trees not matching species tree because coalesence can occur at any point in time. population size is more likely to affect it though
 
@@ -210,23 +210,113 @@ anomaly zone=the majority of the gene trees have a history different from the sp
 **question**: rcoal() and rtree() both build random tree, but the help package says that rcoal() builds coalescent trees. Why are these random trees considered coalescent? because all of the tips are at one time point and merge back to a common ancestor?
 
 bootstrapping measures the robustness of the data to resampling, but not necessarily the accuracy of the model. 
+
   * this is why large sample sizes are not great for bootstrapping-- you will probably get the same answer 
   
 ####Heled and Drummond 
 simulated data with their prior (think of doing a coin flip simuation where p=0.3, then using that as a prior for a bayesian analysis... you will get the same answer)
 
 
-###Hahn 2015
+####Hahn 2015
 
 **adaptive introgression**: the traits that tend to get in and spread are usually adaptive 
+
   * this is because when a new gene enters the population, its frequency is low and tehrefore not likely to get passed on; so if it does, it's probably adaptive 
   
+
+###2/4/20
+
+**mutation rate**: rate at which DNA is changing
+**substitution rate**: rate at which DNA is changing across an entire population 
+
+if an allele is adaptive, the chance that it will go to fixation is higher. if maladaptove, lower. 
+
+poisson distributions are used for discrete count data of rates.
+
+  * rate*time. 2 bees per hour. 5 car crashes per mile. 
   
+####Sanderson
+
+attempting to solve the complex issue of different rates on different branches
+
+this is an issue because if each branch has its own rate, there will be more parameters in the model than there are data. In their method, they allowed some branch lengths to be the same based on how extreme the difference is?
+
+###2/6/20
+
+parametric methods assume an underlying distribution that can be characterized with parameters (e.g. maximum likelihood)
+
+BEAST allows parameters to be "linked", which essentially just means that you can set parameters for different genes/clades etc to be the same and some to be different.
   
+RAxML doesnt have the capability to date trees, but you can use the output from it as a prior for BEAST and not allow it to change the tree topology, but allow it to change branch lengths.
+
+**Instertion-deletion model:**
+"multiple sequence alignment" under an insertion-deletion model basically means that you have mutiple sequences, and when there are "gaps" of amino acids that don't match, it could be an insterion or deletion. So you would use max likelihood to find the most probable alignment based on that model. BEAST allows you to estimate the alignment and the phylogeny simultaneously with MCMC, meaning that it will change the alignment, calculate likelihood, change the tree, calculate the likelihood, etc. until it finds the max likelihood estimate of both.
+
+
+
+Using BEAST and using uncorrelated rate models can still cause you to incorrectly date trees 
+
+
+###2/11/20
+
+markov chain process: memoryless, doesnt matter where you came from, only where you are
+
+For ancestral state reconstruction, we can build a rate matrix with the probability of going from one character state to another. Then, we can set different transtiitons to zero (build different models) and test which model fits the data (tip character states) the best, to predict probabilities of transitioning states. 
+
+To constrain by time, multiply the matrix by t (ex. rate of changing from A to B in 100 million years). When you exponentiate this matrix, you now havea  probability transition matrix (probability of changing from A to B in 100 million years)
+
+From this basic rate matrix mode, we can:
+
+  * test hypotheses about rates for a single character 
+  * test hypotheses about correlations between characters (do they evolve at the same rate?)
+  * infer trees
+  * reconstruct ancestral character states
   
+####Pagel (1999)
+
+how do you decide the weight of two different character states at the root of the phylogeny to do ancestral state reconstruction? One way is to do the frequency of each phenotype at the tips.
+
+###2/13
+####In-class exercise: likelihood, optimization, MCMC
+
+Likelihood optimization function: What parameters for the model optimize the likelihood of the data? We want to find the "best" value
+
+Bayesian optimization function: Sample parameter space, and if the likelihood is better after one step you can move to that place BUT also sometimes you move down, based on the value of a random number. 
+
+likelihood times prior or plus prior if data is on log scale 
+
+
+###2/18
+
+central limits theorem: the distribution of the sums of numbers drawn from any distribution will form a normal distribution.
+
+  * brownian motion: random processes adding up along the branches result in a normal distribution of continuous variables at the tips 
+  * all different processes added together will evenutally sum to a normal distribution
+  -->even for any amount of taxa, or any distance between taxa?
   
+###2/20
+
+you can tell whether or not something is evolving under borwnian motion, but you can't tell what mechanism it is (drift vs. directional selection)
+
+you can compare models for trees where some groups evolve faster than others, and does this correlate with a certain trait (like selfing)?
+
+You can also compare models for trees where evolution occurs more quickly after a certain time point on the tree (ex. the cretaceous in agiosperms)
   
-  
-  
-  
+OU process: brownian motion + being drawn toward an optimum with some wiggle allowed 
+
+theta = optimal value (parent)
+sigma squared = wiggle (brownian motion)
+alpha = strength of pull
+
+different from directional selection because directional selection theorertically keeps selecting for one direction continually, whereas the OU process for stabilizing selection selects for some optimum
+
+time vs. variance at the tip will be linear positive for a BM process
+time vs. variance at the tip should be positive but eventually flatten out for OU process because there is an optimum, therefore constraint on variance 
+
+
+
+
+
+
+
 

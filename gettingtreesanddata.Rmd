@@ -20,6 +20,14 @@ Now let's get ya tree, replacing the `eval=FALSE` with `eval=TRUE` and replacing
 
 	# Let's plot the tree:
 	plot.phylo(rosa.tree, type="fan", cex=0.2)
+	
+	 fragaria.id <- tnrs_match_names("fragaria")$ott_id
+	# Now get Open Tree's current best estimate of the phylogeny for the group
+	# They call this the tree of life; we can get the subtree for just this group.
+	fragaria.tree <- tol_subtree(ott_id=fragaria.id)
+
+	# Let's plot the tree:
+	plot.phylo(fragaria.tree, type="phylogram", cex=0.2)
 
 ```
 
