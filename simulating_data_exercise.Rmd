@@ -1,0 +1,32 @@
+---
+title: "Simulating data: Estimating tips on the tree for missing data"
+author: "Alex Faidiga"
+date: "March 31, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ape)
+library(phytools)
+library(geiger)
+# -a  a
+#  b -b 
+r12 <- .8
+r21 <- .6
+ntax <- 15
+phy <- ape::rcoal(ntax)
+q <- list(rbind(c(-r12, r12), c(r21, -r21)))
+traits <- geiger::sim.char(phy=phy, par=q, nsim=1, model="discrete", root=1)[,,1]
+taxon_to_delete <- sample(sequence(ntax), 1)
+traits_changed <- traits[-taxon_to_delete]
+phy_changed <- ape::drop.tip(phy, names(traits)[taxon_to_delete])
+model_fit <- geiger::fitDiscrete(phy=phy_changed, dat=traits_changed, model="ARD", transform="none")
+traits_1 <- traits
+traits_1[taxon_to_delete] <- 1
+model_fit_1 <- geiger::fitDiscrete(phy=phy, dat=traits_1, model="ARD", transform="none")
+traits_2 <- traits
+traits_2[taxon_to_delete] <- 2
+model_fit_2 <- geiger::fitDiscrete(phy=phy, dat=traits_2, model="ARD", transform="none")
+print(taxon_to_delete)
+print(rbind(traits, traits_1, traits_2))
+```

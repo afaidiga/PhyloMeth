@@ -4,123 +4,116 @@ author: "Alex Faidiga"
 date: "February 17, 2020"
 output: html_document
 ---
-
 ```{r packages, include = FALSE}
+setwd("~/Desktop/phylometh")
 library(geiger)
 library(rotl)
 library(ape)
 library(phytools)
+library(phangorn)
+library(corHMM)
 ```
 
-Obtain fragaria tree from Tree of Life:
-```{r fragaria tree of life, eval = FALSE}
-fragaria.id <- tnrs_match_names("fragaria")$ott_id
-frag.tree <- tol_subtree(ott_id=fragaria.id)
-plot.phylo(frag.tree, type="phylogram", cex=0.8)
-
-frag.data <- read.csv("fragaria_dat.csv", stringsAsFactors = FALSE, row.names = 1) #have to have genus and species as one string and the species to be row names in the data frame for treedata() to work later
-```
-
-Clean data to eliminate species that are not present in the data set or in the tree:
-```{r fragaria data cleaning, eval = FALSE}
-clean_data <- function(phy, data) {
-  phy$tip.label <- strip_ott_ids(phy$tip.label, remove_underscores = T) #renames the tips of the tree by removing the ott id and removing underscores so that it can be matched with species names in the data frame
-  treedata(phy, data, sort=TRUE, warnings=TRUE)
-}
-
-clean_tree <- clean_data(frag.tree, frag.data)$phy
-plot.phylo(clean_tree, type="phylogram", cex=1)
-
-```
-
-The only species that match create a tree that only has one single polytomy. 
-
-Create a function to search for trees from tree of life:
-
-```{r tree of life search function, eval = FALSE}
-my_tree <- function(taxon){
-  taxon.id <- tnrs_match_names(taxon)$ott_id
-  taxon.tree <- tol_subtree(ott_id=taxon.id)
-  plot.phylo(taxon.tree, type="fan", cex=0.2)
-  print(taxon.id)
-}
-
-my_tree("clematis")
-
-clem_data <- read.csv("clematis_dat.csv", stringsAsFactors = FALSE) #have to have genus and species as one string and the species to be row names in the data frame for treedata() to work later
-head(clem_data)
-clem_data$gen_spec = paste(clem_data$genus, clem_data$species)
-clem_data2 <- data.frame(clem_data$gen_spec, clem_data$trait, row.names = 1)
-
-head(clem_data2)
-```
-
-
-Clean the data as above:
-
-```{r clematis data cleaning, eval = FALSE}
-clean_data <- function(phy, data) {
-  phy$tip.label <- strip_ott_ids(phy$tip.label, remove_underscores = T) #renames the tips of the tree by removing the ott id and removing underscores so that it can be matched with species names in the data frame
-  treedata(phy, data, sort=TRUE, warnings=TRUE)
-}
-
-clematis.id <- tnrs_match_names("clematis")$ott_id
-clem.tree <- tol_subtree(ott_id=clematis.id)
-  
-matching_tree <- clean_data(clem.tree, clem_data2)
-
-plot.phylo(matching_tree)
-length(matching_tree$tiplabel)
-
-```
  
-This is a pain, moving on to using Smith and Brown's (2017) huge tree of angiosperms downloaded from https://github.com/FePhyFoFum/big_seed_plant_trees/releases.
-
-I'll create a function that isolates a clade from the giant tree by identifying the node with the MRCA of two species provided to the function. 
+Loading in data from Smith and Brown's (2017) huge tree of angiosperms, downloaded from https://github.com/FePhyFoFum/big_seed_plant_trees/releases. Both of these trees are built with GenBank data, but they differ in what tree is used as a "backbone". The GBOTB tree uses Open Tree of Life data, and the GBMB uses data from Mallagón et al. (2015).
 
 ```{r viola tree}
+GBOTB_tree <- read.tree("GBOTB.tre")
+GBMB_tree <- read.tree("GBMB.tre")
+ALLMB_tree <- read.tree("ALLMB.tre")
+```
 
-huge_tree <- read.tree("ALLMB.tre")
+I'll create a function that isolates a clade from the giant tree by identifying the node with the MRCA of two species provided to the function:
 
-clade_finder <- function(species1, species2){
-  viola_node<-fastMRCA(huge_tree,species1,species2)   #identifies the most recent node where these two species shared a recent common ancestor 
-  viola_clade<-extract.clade(huge_tree, viola_node) #extracts and creates a new tree for a clade based on the MRCA node identified  
+```{r visualize trees}
+
+clade_finder <- function(species1, species2, tree){
+  viola_node<-fastMRCA(tree,species1,species2)   #identifies the most recent node where these two species shared a common ancestor 
+  viola_clade<-extract.clade(tree, viola_node) #extracts and creates a new tree for a clade based on the MRCA node identified  
 plot.phylo(viola_clade, cex = 0.3, type = "fan")
 print(Ntip(viola_clade))
 }
 
-clade_finder("Viola_pubescens", "Viola_rostrata")
+clade_finder("Viola_pubescens", "Viola_rostrata", GBOTB_tree)
+clade_finder("Viola_pubescens", "Viola_rostrata", GBMB_tree)
 
 ```
 
-Now I have a clade of violets, but it's not necessarily a meaningful clade. I just wanted to trim down the tree to a reasonable size. Since I'm waiting to get a data file from the TRY plant traits database, I'll make up random data for now:
+Now I have a clade of violets so I know the data are ok, but it's not necessarily a meaningful clade. Between the two large trees, it looks like the clades I extracted have the same topology and number of tips. 
 
-```{r viola tree and data}
+Now, I'll extract all violets from the large tree using genbank data (GBMB_tree and GBOTB_tree) and plot them. 
 
-viola_node<-fastMRCA(huge_tree, "Viola_pubescens", "Viola_rostrata")   
-viola_clade<-extract.clade(huge_tree, viola_node)
+```{r viola tree attempt 1}
+# length(GBMB_tree$tip.label)
+# length(GBOTB_tree$tip.label) #this tree has 7 more tips
 
-species_list <- viola_clade$tip.label
-viola_growthform <- rbinom(n=79, size=1, prob=0.3) #let's pretend 1=caulescent and 0=acaulescent
+all_tips_GBMB <- GBMB_tree$tip.label
+all_tips_GBOTB <- GBOTB_tree$tip.label
 
-viola_data <- data.frame(species_list, viola_growthform, row.names = 1)
+viola_tips_GBMB <- all_tips_GBMB[grepl("Viola_", fixed = TRUE, GBMB_tree$tip.label)]
+viola_tips_GBOTB <- all_tips_GBOTB[grepl("Viola_", fixed = TRUE, GBOTB_tree$tip.label)]
 
+# length(viola_tips_GBMB) 
+# length(viola_tips_GBOTB) #same for both; 173 viola spp.
+
+viola_node<-getMRCA(GBMB_tree, viola_tips_GBMB)   
+viola_tree<-extract.clade(GBMB_tree, viola_node)
+
+plot(viola_tree, cex = 0.5)
+
+#write to PDF and open using preview
+pdf(file="~/Desktop/phylometh/viola_tree1.pdf", width=20, height=20)
+
+  plot(viola_tree, cex = 0.5, type = "fan")
+
+system("open -a Preview.app ~/Desktop/phylometh/viola_tree1.pdf")
+dev.off()
 ```
 
-It’s critically important to LOOK at what you have. Are there weird values? Has the match between taxa and state gone correctly? Do you think you have binary data, but there’s actually only state 1? Especially as data sets grow (yay), and are assembled using scripts rather than by error-prone, non-reproducable hands (double yay), scientists are increasingly less likely to deeply look at our data. That’s bad – don’t be that person.
+Another way to extract species of interest and build a tree if they are paraphyletic:
+
+```{r viola tree attempt 2}
+viola_tree2 <- drop.tip(GBMB_tree, GBMB_tree$tip.label[!(GBMB_tree$tip.label %in% viola_tips_GBMB)])
+
+pdf(file="~/Desktop/viola_tree2.pdf", width=20, height=20)
+
+  plot(viola_tree2, type = "fan", cex = 1)
+
+dev.off()
+system("open ~/Desktop/viola_tree2.pdf")
+```
+
+###It’s critically important to LOOK at what you have. Are there weird values? Has the match between taxa and state gone correctly? Do you think you have binary data, but there’s actually only state 1? Especially as data sets grow (yay), and are assembled using scripts rather than by error-prone, non-reproducable hands (double yay), scientists are increasingly less likely to deeply look at our data. That’s bad – don’t be that person.
 
 ```{r data visualization function}
 VisualizeData <- function(phy, data) {
   fmode<-as.factor(setNames(data[,1],rownames(data)))
   trait1 <- unique(data[,1])[1]
   trait2 <- unique(data[,1])[2]
-  dotTree(phy, fmode, colors=setNames(c("blue","red"),
-    c(paste(trait1), paste(trait2))),ftype="i",fsize=0.3) #plot the discrete character on the phylogeny
+  trait3 <- unique(data[,1])[3]
+  dotTree(phy, fmode, colors=setNames(c("blue","red", "green"),
+    c(paste(trait1), paste(trait2), paste(trait3))),ftype="i", fsize = 0.3) #plot the discrete character on the phylogeny
+
 }
 
-VisualizeData(viola_clade, viola_data)
+#Create random data (in data frame form to work with this function) for viola since I don't have any:
+species_list <- viola_tree$tip.label
+viola_trait_012 <- rbinom(n=173, size=2, prob=0.3)
+viola_data <- data.frame(species_list, viola_trait_012, row.names = 1)
+VisualizeData(viola_tree, viola_data)
 
-#test with another data set:
+# pdf(file="~/Desktop/viola_tree_traits.pdf", width=20, height=20)
+# 
+# VisualizeData(viola_tree, viola_data)
+# 
+# dev.off()
+# system("open ~/Desktop/viola_tree_traits.pdf")
+
+```
+
+Test with another data set:
+
+```{r}
 eel_tree<-read.tree("elopomorph.txt")
 eel_data<-read.csv("elopomorph.csv",row.names=1)
 
@@ -131,32 +124,102 @@ VisualizeData(eel_tree, eel_data)
 
 **NOTE: this function works for data frames where each row name is a species and there is a column for discrete trait data, where each species has a given value for that trait. Trait value can be binary or a string.**
 
-First, let’s use parsimony to look at ancestral states:
+###First, let’s use parsimony to look at ancestral states:
 
 ```{r eval = FALSE}
-cleaned.discrete.phyDat <- phangorn::phyDat(viola_data, type="USER", levels = c(1,0)) #phyDat is a data format used by phangorn
-anc.p <- phangorn::ancestral.pars(tree, cleaned.discrete.phyDat)
-plotAnc(tree, anc.p, 1)
+viola_binary_trait <- rbinom(n=173, size=2, prob=0.5)
+viola_data <- matrix(viola_binary_trait, nrow = length(species_list), ncol = 1, dimnames = list(species_list))
+
+cleaned.discrete.phyDat <- phyDat(data = viola_data, type="USER", levels = c("0","1", "2")) #phyDat is a data format used by phangorn
+
+anc.p <- phangorn::ancestral.pars(viola_tree, cleaned.discrete.phyDat)
+plotAnc(tree = viola_tree, data = anc.p, i = 1, cex.pie = 0.2, cex = 0.3, type = "fan")
+
+
+# pdf(file="~/Desktop/anc.states.parsimony.pdf", width=20, height=20)
+# 
+# plotAnc(tree = viola_tree, data = anc.p, i = 1, cex.pie = 0.2, cex = 0.3, type = "fan")
+# 
+# dev.off()
+# system("open -a Preview.app ~/Desktop/ancestral.states.pdf")
 ```
 
-Do you see uncertainty? What does it mean?
+###Do you see uncertainty? What does it mean?
 
-Now, plot the likelihood estimates.
+It seems like uncertainty increases as it gets closer to the tips. This sort of makes sense since my data is just random numbers from 0-2; the data are not very clustered at the tips, so ancestral states one node below the tips are likely not very certain. As we move further down the tree, the estimates for ancestral states likely become more certain because there are more data used for calculating the state at each node.
+
+###Now, plot the likelihood estimates.
 
 ```{r eval = FALSE}
-anc.ml <- ancestral.pml(pml(tree, cleaned.discrete.phyDat), type="ml")
-plotAnc(tree, anc.ml, 1)
+anc.ml <- ancestral.pml(pml(tree = viola_tree, data = cleaned.discrete.phyDat), type="ml")
+
+plotAnc(tree = viola_tree, data = anc.ml, i = 1, cex.pie = 0.2, cex = 0.7, type = "fan")
+
+# pdf(file="~/Desktop/anc.states.ML.pdf", width=20, height=20)
+# 
+# plotAnc(tree = viola_tree, data = anc.ml, i = 1, cex.pie = 0.2, cex = 0.7, type = "fan")
+# 
+# dev.off()
+# system("open -a Preview.app ~/Desktop/anc.states.ML.pdf")
 ```
 
-How does this differ from parsimony?
+###How does this differ from parsimony?
+The uncertainty in the estimates seems much greater when using ML.
 
-Why does it differ from parsimony?
+###Why does it differ from parsimony?
+Parsimony is estimating the ancestral states based on the least amount of changes possible, while ML is finding the ancestral states that maximize the likelihood of the data on the tree. 
 
-What does uncertainty mean?
+###What does uncertainty mean?
+Uncertainty in this case has to do with our uncertainty in the character state at a given node. 
 
-Now, to the biological questions. For many of these, corHMM will be a useful package. Do the following analyses:
+###Now, to the biological questions. For many of these, corHMM will be a useful package. Do the following analyses:
 
-How can you estimate transition rates between states? Do it.
-How could you examine if transition rates are equal?
-Think about the Lewis (2001) MKV model. Are your traits all variable? Will using this make sense for your data? Try using it. Do results change?
-How could you test order of state evolution?
+####How can you estimate transition rates between states? Do it.
+
+```{r}
+species_list <- viola_tree$tip.label
+viola_binary_trait2 <- rbinom(n=173, size=1, prob=0.2)
+viola_data2 <- matrix(c(species_list, viola_binary_trait2), nrow=173, ncol=2, byrow=F)
+
+mm = rbind(c(NA, 1), c(2, NA))
+
+cor.rates <- rayDISC(phy = viola_tree, data = viola_data2, ntraits = 1, node.states = "marginal", rate.mat = mm)
+cor.rates
+
+```
+
+####How could you examine if transition rates are equal?
+The "fit" output from rayDISC tells you the transition rates between states. Because I supplied a matrix indicating that I think the rates would be different, it provided two different parameter estimates for the transition from 0 to 1 and 1 to 0. 
+
+####Think about the Lewis (2001) MKV model. Are your traits all variable? Will using this make sense for your data? Try using it. Do results change? How could you test order of state evolution?
+Because the MKV model uses discrete traits to estimate branch lengths using likelihood, using only variable characters (without correcting for acquisition bias) leads to overestimation of rates of evolution and therefore less accurate estimates of branch lengths. 
+
+```{r}
+#simulating more traits, because it needs more than one:
+species_list <- viola_tree$tip.label
+viola_binary_trait2 <- rbinom(n=173, size=1, prob=0.2)
+viola_binary_trait3 <- rbinom(n=173, size=1, prob=0.7)
+viola_binary_trait4 <- rbinom(n=173, size=1, prob=0.4)
+
+
+viola_data3 <- data.frame(viola_binary_trait2, viola_binary_trait3, viola_binary_trait4, row.names = species_list)
+names(viola_data3)
+
+# MKV <- lewisMkv(phy = viola_tree, data = viola_data3, ncores = 2)
+# 
+# par(mfcol = (c(1,2)))
+# plot.phylo(viola_tree, cex = 0.2)
+# plot.phylo(MKV$phy, cex = 0.2)
+
+# pdf(file="~/Desktop/viola_tree_traits.pdf", width=20, height=20)
+# 
+# par(mfcol = (c(1,2)))
+# plot.phylo(viola_tree, cex = 0.2)
+# plot.phylo(MKV$phy, cex = 0.2)
+# 
+# dev.off()
+# system("open ~/Desktop/viola_tree_traits.pdf")
+
+
+```
+I got MKV to work, but for some reason it is not working in Rmarkdown. The tree I got from it has much different branch lengths than the tree I provided it (much shorter branches).

@@ -261,9 +261,9 @@ Using BEAST and using uncorrelated rate models can still cause you to incorrectl
 
 markov chain process: memoryless, doesnt matter where you came from, only where you are
 
-For ancestral state reconstruction, we can build a rate matrix with the probability of going from one character state to another. Then, we can set different transtiitons to zero (build different models) and test which model fits the data (tip character states) the best, to predict probabilities of transitioning states. 
+For ancestral state reconstruction, we can build a rate matrix with the probability of going from one character state to another. Then, we can set different transtitions to zero (build different models) and test which model fits the data (tip character states) the best, to predict probabilities of transitioning states. 
 
-To constrain by time, multiply the matrix by t (ex. rate of changing from A to B in 100 million years). When you exponentiate this matrix, you now havea  probability transition matrix (probability of changing from A to B in 100 million years)
+To constrain by time, multiply the matrix by t (ex. rate of changing from A to B in 100 million years). When you exponentiate this matrix, you now have a  probability transition matrix (probability of changing from A to B in 100 million years)
 
 From this basic rate matrix mode, we can:
 
@@ -312,6 +312,37 @@ different from directional selection because directional selection theorerticall
 
 time vs. variance at the tip will be linear positive for a BM process
 time vs. variance at the tip should be positive but eventually flatten out for OU process because there is an optimum, therefore constraint on variance 
+
+###2/25
+
+```{r}
+pdf(file="~Desktop/Big.pdf", width=20, height=20) #this writes to a PDF
+dev.off() #if i make another figure before this line it will write two PDFs to one file
+
+drop.tip(phylogeny, "tip name") #drop a single tip from a phylogeny 
+```
+
+The brownian motion assumption means that more time=more change
+
+With independent contrasts, brownian motion is assumed. If branch lengths are incorrect, it could affect the analysis
+
+
+###2/27
+
+For binary traits
+
+In pagel's model, trait evolution is markovian (memoryless); state at time t does not depend on the state of the ancestor 
+
+  * not biologically realistic because for example, it's probably easier for a eyeless fish to gain eyes than for a kelp to gain eyes 
+  
+You can have different rates for 1-->0 or 0-->1
+
+###3/3
+phylogeography is typically within species, while bioegeography is between
+
+vicariance = allopatric speciation, basically; speciation due to a geogrphic barrier
+
+dispersal = a barrier arising but groups dispersing across it, then speciation happening
 
 
 
