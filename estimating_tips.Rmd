@@ -1,0 +1,153 @@
+---
+title: "Estimating tips"
+author: "Alex Faidiga"
+date: "April 8, 2020"
+output: html_document
+---
+
+###Finding the best estimate of discrete tip state for missing data at a single tip:
+
+```{r single tip setup, eval=TRUE}
+library(ape)
+library(phytools)
+library(geiger)
+library(data.table)
+
+#rate matrix structure
+#rates of transition from 1->2 and 2->1 are different
+#    1  2
+# 1 -a  a
+# 2  b -b 
+
+#set rates for simulated data
+r12 <- 15
+r21 <- 15
+ntax <- 50
+
+#create phylogeny
+phy <- ape::rcoal(ntax)
+
+#create rate matrix
+q <- list(rbind(c(-r12, r12), c(r21, -r21)))
+
+#simulate discrete traits using rate matrix
+traits <- geiger::sim.char(phy=phy, par=q, nsim=1, model="discrete", root=1)[,,1]
+
+#delete random taxon to simulate missing data
+taxon_to_delete <- sample(sequence(ntax), 1)
+
+#delete trait and create phylogeny for deleted taxon
+traits_changed <- traits[-taxon_to_delete]
+phy_changed <- ape::drop.tip(phy, names(traits)[taxon_to_delete])
+
+#visualize trees
+par(mfcol=c(1,3))
+plotBranchbyTrait(phy, traits, mode=c("edges"), palette="rainbow")
+plot(phy)
+plot(phy_changed)
+
+```
+
+```{r estimate most likely single tip state, eval = TRUE}
+#get MLEs of transition rates and likelihood from tree
+model_fit <- geiger::fitDiscrete(phy=phy_changed, dat=traits_changed, model="ARD", transform="none")
+model_fit
+q12 <- model_fit$opt[[1]]
+q21 <- model_fit$opt[[2]]
+
+#assign character state = 1 to the missing taxon and calculate likelihood
+traits_1 <- traits
+traits_1[taxon_to_delete] <- 1
+model_fit_1 <- geiger::fitDiscrete(phy=phy, dat=traits_1, model="ARD", transform="none")
+model_fit_1$opt
+
+
+#assign character state = 2 to the missing taxon and calculate likelihood
+traits_2 <- traits
+traits_2[taxon_to_delete] <- 2
+model_fit_2 <- geiger::fitDiscrete(phy=phy, dat=traits_2, model="ARD", transform="none")
+
+#extract likelihood and AICc values
+likelihood_values <- c(model_fit_1[[4]]$lnL, model_fit_2[[4]]$lnL)
+names(likelihood_values) <- c("model 1", "model 2")
+
+AICc_values <- c(model_fit_1[[4]]$aicc, model_fit_2[[4]]$aicc)
+AICc_values <- c(model_fit_1[[4]]$aicc-min(AICc_values), model_fit_2[[4]]$aicc-min(AICc_values))
+names(AICc_values) <- c("model 1", "model 2")                         
+
+results <- matrix(c(likelihood_values, AICc_values), byrow = FALSE, nrow = 2, dimnames = list(c("Model 1","Model 2"), c("log-likelihood","AICc")))
+
+#print "true" trait data, trait data for models, and results for models
+print(taxon_to_delete)
+print(rbind(traits, traits_1, traits_2))
+print(results)
+```
+
+###Estimating the most likely tip states for a tree with missing data for multiple taxa:
+
+```{r multiple tip setup, eval = TRUE}
+#set rates for simulated data
+r12 <- 15
+r21 <- 10
+ntax <- 15
+
+#create phylogeny
+phy <- ape::rcoal(ntax)
+
+#create rate matrix
+q <- list(rbind(c(-r12, r12), c(r21, -r21)))
+
+#simulate discrete traits using rate matrix
+traits <- geiger::sim.char(phy=phy, par=q, nsim=1, model="discrete", root=1)[,,1]
+
+#delete random taxa to simulate missing data
+taxa_to_delete <- sample(sequence(ntax), 3, replace = FALSE)
+
+#delete trait and create phylogeny for deleted taxon
+traits_changed <- traits[-taxa_to_delete]
+phy_changed <- ape::drop.tip(phy, names(traits)[taxa_to_delete])
+
+#get MLEs of transition rates and likelihood from tree for which missing tips are dropped 
+model_fit <- geiger::fitDiscrete(phy=phy_changed, dat=traits_changed, model="ARD", transform="none")
+model_fit
+q12 <- model_fit$opt[1]
+q21 <- model_fit$opt[2]
+```
+
+####BestTips function: This function will calculate the likelihood and AICc for every possible combination of traits for missing tips and return a list containing model results and a vector of the trait values with the highest likelihood. Must provide a tree, vector of trait data and vector of indexes for tips that have missing data. 
+
+```{r multi-tip estimation function, eval = TRUE}
+BestTips <- function(phy, trait.data, replaced.traits.index){
+  replaced.traits <- trait.data 
+  sim.traits <- do.call(CJ, replicate(length(replaced.traits.index), 1:2, FALSE)) 
+  trait.possibilities <- data.frame(matrix(nrow=nrow(sim.traits), ncol=(length(replaced.traits))))
+  
+  for(i in 1:nrow(sim.traits)){
+    replaced.traits[replaced.traits.index] <- sim.traits[i]
+    trait.possibilities[i,] <- replaced.traits
+    colnames(trait.possibilities) <- names(trait.data)
+}
+  traits <- as.matrix(trait.possibilities)
+  df <- data.frame(matrix(nrow=nrow(traits), ncol = 3))
+  colnames(df) <- c("Trait combination","Log-likelihood", "AICc")
+  
+  for(i in 1:nrow(traits)){
+      model.results <- geiger::fitDiscrete(phy=phy, dat=traits[i,], model="ARD", transform="none")
+    df[i,] <- c(i, model.results[[4]]$lnL, model.results[[4]]$aicc)
+  }
+  df$AICc <- df$AICc-min(df$AICc)
+  best.traits <- traits[df[df$AICc == 0,]$`Trait combination`,]
+  results <- list(df, best.traits)
+  return(results)
+}
+
+final.results <- BestTips(phy = phy, trait.data = traits, replaced.traits.index = taxa_to_delete)
+
+final.results
+
+```
+
+###Next steps in the future: try with real data and see how accurately it estimates tips, make figure displaying phylogeny with data estimated from BestTips, confidence intervals, figures showing limitations of the function (e.g. how well it works for trees of different sizes and numbers of missing tips).
+
+###Also, I want to find a way to provide the rate matrix estimated from the phylogeny with missing data rather than fitDiscrete calculating them separately for every set of traits. 
+
