@@ -5,9 +5,7 @@ date: "March 23, 2020"
 output: html_document
 ---
 
-```{r}
-install.packages("yearn")
-install.packages("OUwie")
+```{r packages, eval = TRUE}
 library(ape) #utility fns
 library(geiger) #utilty fns
 library(OUwie)
@@ -15,7 +13,7 @@ library(OUwie)
 
 Getting tree: 
 
-```{r}
+```{r getting tree, eval = TRUE}
 setwd("~/Desktop/phylometh")
 GBMB_tree <- read.tree("GBMB.tre")
 
@@ -27,48 +25,35 @@ viola_node<-getMRCA(GBMB_tree, viola_tips_GBMB)
 viola_tree<-extract.clade(GBMB_tree, viola_node)
 
 plot(viola_tree, cex = 0.5, type = "fan")
-
-#write to PDF and open using preview
-pdf(file="~/Desktop/phylometh/viola_tree.pdf", width=20, height=20)
-
-  plot(viola_tree, cex = 0.5, type = "fan")
-
-system("open -a Preview.app ~/Desktop/phylometh/viola_tree.pdf")
-dev.off()
 ```
 
-Simulating continuous data because TRY refuses to give me anything. Let's say this trait is plant height in cm:
+Simulating continuous data because I do not have any. Let's say this trait is plant height in cm. Log-transform.
 
-```{r}
+```{r simluate continuous data, eval = TRUE}
 length(viola_tips_GBMB)
 species_list <- viola_tree$tip.label
 cont.data <- log(rnorm(n = 173, mean = 15, sd = 5))
 names(cont.data) <- species_list
+cont.data.vals <- unname(cont.data)
 head(cont.data)
 ```
 
 Clean/visualize data:
 
-```{r}
+```{r vis data, eval = TRUE}
 vis.cont.data <- function(phy, data) {
   phytools::contMap(phy, data, fsize = 0.5, lwd = 0.5)
 }
 
 vis.cont.data(viola_tree, cont.data)
 
-pdf(file="~/Desktop/viola_tree_traits.pdf", width=20, height=20)
-
-VisualizeData(viola_tree, cont.data)
-
-dev.off()
-system("open ~/Desktop/viola_tree_traits.pdf")
-
 ```
 
-First, start basic. What is the rate of evolution of your trait on the tree?
-```{r}
+####First, start basic. What is the rate of evolution of your trait on the tree?
+
+```{r rate of evol of continuous trait, eval = TRUE}
 BM1 <- geiger::fitContinuous(viola_tree, cont.data, model="BM")
-print(paste("The rate of evolution is", sqrt(BM1$opt[[1]]), "in units of cm/million years")) #not sure if correct?
+print(paste("The rate of evolution is", sqrt(BM1$opt[[1]]), "in units of cm/million years"))
 
 OU1 <- fitContinuous(viola_tree, cont.data, model="OU")
 par(mfcol = (c(1,2)))
@@ -76,118 +61,203 @@ plot(viola_tree, show.tip.label=FALSE)
 ou.tree <- rescale(viola_tree, model="OU", alpha = OU1$opt[[1]])
 plot(ou.tree, cex = 0.2)
 ```
+
 ####How are the trees different?
+
 The OU tree show species diverging much earlier. This is because the alpha parameter is added when plotting the tree, which describes the strength of the pull toward an optimum.
 
-Compare trees:
+####Compare trees with AIC:
 
-```{r}
-
+```{r BM OU AIC comparison, eval = TRUE}
 AIC.BM1 <- BM1$opt[[6]]
 AIC.OU1 <- OU1$opt[[7]]
-delta.AIC.BM1 <- AIC.BM1-AIC.OU1
-delta.AIC.OU1 <- AIC.OU1-AIC.BM1
+AICvals <- c(AIC.BM1, AIC.OU1)
+dAIC.BM1 <- AIC.BM1-min(AICvals)
+dAIC.OU1 <- AIC.OU1-min(AICvals)
 
-#OU is the better fit?
+print(paste("The OU model is the better fit with a delta AIC value of", dAIC.OU1))
 
 ```
-This takes longer than you may be used to.
 
-We’re a bit obsessive about doing multiple starts and in general performing a thorough numerical search. It took you 3+ years to get the data, may as well take an extra five minutes to get an accurate answer
+####This takes longer than you may be used to. We’re a bit obsessive about doing multiple starts and in general performing a thorough numerical search. It took you 3+ years to get the data, may as well take an extra five minutes to get an accurate answer.
 
-First, we need to assign regimes. The way we do this is with ancestral state estimation of a discrete trait. We can do this using ace() in ape, or similar functions in corHMM or diversitree. Use only one discrete char.
+####First, we need to assign regimes. The way we do this is with ancestral state estimation of a discrete trait. We can do this using ace() in ape, or similar functions in corHMM or diversitree. Use only one discrete char.
 
-```{r}
-one.discrete.char <- rbinom(n=173, size=2, prob=0.3)
+```{r ancestral reconstruction of discrete char, eval = TRUE}
+one.discrete.char <- rbinom(n=173, size=1, prob=0.3)
 discrete.data <- data.frame(species_list, one.discrete.char, row.names = 1)
 reconstruction.info <- ace(one.discrete.char, viola_tree, type="discrete", method="ML", CI=TRUE)
 best.states <- colnames(reconstruction.info$lik.anc)[apply(reconstruction.info$lik.anc, 1, which.max)]
 ```
-Now add these labels to your tree.
-```{r}
-labeled.tree <- ________________
-nodeBased.OUMV <- OUwie(viola_tree, cont.data, model="OUMV", simmap.tree=FALSE, diagn=FALSE)
-print(nodeBased.OUMV)
+
+OUwie example data:
+
+```{r OUwie example data, eval = FALSE}
+data(tworegime)
+plot(tree)
+select.reg<-character(length(tree$node.label))
+select.reg[tree$node.label == 1] <- "black"
+select.reg[tree$node.label == 2] <- "red"
+plot(tree)
+nodelabels(pch=21, bg=select.reg)
 ```
-What do the numbers mean?
 
-Now run all OUwie models:
-```{r}
+```{r OUwie example runs, eval = FALSE}
+#Now fit an OU model that allows different sigma^2:
+OUwie(tree,trait,model=c("OUMV"),root.station=TRUE)
+
+#Fit an OU model based on a clade of interest:
+OUwie(tree,trait,model=c("OUMV"), root.station=TRUE, clade=c("t50", "t64"))
+
+#For large trees, it may be useful to have ways to restart the search (due to
+#finite time per run on a computing cluster, for example). You can do this
+#by changing settings of OUwie runs. For example:
+
+run1 <- OUwie(tree,trait,model=c("OUMV"),root.station=TRUE, opts =
+list("algorithm"="NLOPT_LN_SBPLX", "maxeval"="500", "ftol_abs"=0.001))
+
+save(run1, file="run1.rda")
+
+#Then, later or in a different session:
+
+load("run1.rda")
+
+run2 <- OUwie(tree,trait,model=c("OUMV"),root.station=TRUE, opts =
+list("algorithm"="NLOPT_LN_SBPLX", "maxeval"="500", "ftol_abs"=0.001),
+starting.vals=run1$new.start)
+
+#run2 will start off where run1 stopped.
+
+## End(Not run)
+
+```
+
+Now add these labels to your tree.
+```{r OUwie node labels, eval = TRUE}
+viola_tree<-extract.clade(GBMB_tree, viola_node)
+viola_tree$node.label <- best.states
+
+select.reg<-character(length(viola_tree$node.label))
+select.reg[viola_tree$node.label == 0] <- "black"
+select.reg[viola_tree$node.label == 1] <- "red"
+plot(viola_tree, cex = 0.2)
+nodelabels(pch=21, cex = 0.5, bg=select.reg)
+
+OUwiedat <- data.frame(genus_species = viola_tree$tip.label, regime = one.discrete.char, cont.trait.val = cont.data.vals)
+
+nodeBased.OUMV <- OUwie(viola_tree, OUwiedat, model="OUMV", simmap.tree=FALSE, diagn=FALSE)
+
+print(nodeBased.OUMV)
+
+```
+####What do the numbers mean?
+
+For each selective regime, OUwie estiamates alpha, sigma squared, and theta. Theta is the optimal value toward which a continuous character is pulled, while alpha describes the strength of the pull toward that character. Sigma squared is the drift or "wiggle" parameter that describes how far the character stochastically drifts from the optimum value. 
+
+####Now run all OUwie models:
+```{r eval = TRUE}
 models <- c("BM1","BMS","OU1","OUM","OUMV","OUMA","OUMVA")
-results <- lapply(models, RunSingleOUwieModel, phy=tree, data=trait)
+results <- lapply(models, OUwie, phy=viola_tree, data=OUwiedat)
 
+AIC.values<-sapply(results, "[[", "AIC")
 AICc.values<-sapply(results, "[[", "AICc")
+
 names(AICc.values)<-models
 AICc.values<-AICc.values-min(AICc.values)
-
 
 print(AICc.values) #The best model is the one with smallest AICc score
 
 best<-results[[which.min(AICc.values)]] #store for later
+OUMV.results <- results[[5]]
 
 print(best) #prints info on best model
-```
-We get SE for the optima (see nodeBased.OUMV$theta) but not for the other parameters. Let’s see how hard they are to estimate. First, look at ?OUwie.fixed to see how to calculate likelihood at a single point.
 
-```{r}
+```
+
+OUMA is the best model. This model is an OU model with different state means as well as different alpha values for each selective regime.
+
+####We get SE for the optima (see nodeBased.OUMV$theta) but not for the other parameters. Let’s see how hard they are to estimate. First, look at ?OUwie.fixed to see how to calculate likelihood at a single point.
+
+```{r eval = FALSE}
 ?OUwie.fixed
-```
-Next, keep all parameters but alpha at their maximum likelihood estimates (better would be to fix just alpha and let the others optimize given this constraint, but this is harder to program for this class). Try a range of alpha values and plot the likelihood against this.
+#For each selective regime, OUwie estimates alpha, sigma squared, and theta. Theta is the optimal value toward which a continuous character is pulled, while alpha describes the strength of the pull toward that character. Sigma squared is the drift or "wiggle" parameter that describes how far the character stochastically drifts from the optimum value.
 
-```{r}
-alpha.values<-seq(from= _______________ , to= _______________ , length.out=50)
-Keep it simple (and slow) and do a for loop:
+```
+
+####Next, keep all parameters but alpha at their maximum likelihood estimates (better would be to fix just alpha and let the others optimize given this constraint, but this is harder to program for this class). Try a range of alpha values and plot the likelihood against this.
+
+```{r eval = TRUE}
+alpha.values<-seq(from= 20, to= 23.759, length.out=50)
 
 likelihood.values <- rep(NA, length(alpha.values))
+
 for (iteration in sequence(length(alpha.values))) {
-    likelihood.values[iteration] <- OUwie.fixed(tree, trait, model="OUMV", alpha=rep(alpha.values[iteration],2), sigma.sq=best$solution[2,], theta=best$theta[,1])$loglik
+    likelihood.values[iteration] <- OUwie.fixed(viola_tree, OUwiedat, model="OUMV", alpha=rep(alpha.values[iteration],2), sigma.sq=OUMV.results$solution[2,], theta=OUMV.results$theta[,1])$loglik
 }
 
-plot(x= _______________ , y= _______________, xlab="_______________", ylab="_______________", type="l", bty="n")
-points(x=best$solution[1,1], y=best$loglik, pch=16, col="red")
-text(x=best$solution[1,1], y=best$loglik, "unconstrained best", pos=4, col="red")
-A rule of thumb for confidence for likelihood is all points two log likelihood units worse than the best value. Draw a dotted line on the plot to show this
+plot(x= alpha.values , y= likelihood.values, xlab="alpha", ylab="likelihood", type="l", bty="n", xlim = c(20, 24))
+points(x=OUMV.results$solution[1,1], y=OUMV.results$loglik, pch=16, col="red")
+text(x=OUMV.results$solution[1,1], y=OUMV.results$loglik, "unconstrained best", pos=4, col="red")
+```
 
-abline(h=_______________, lty="dotted") #Two log-likelihood
-Now, let’s try looking at both theta parameters at once, keeping the other parameters at their MLEs
+####A rule of thumb for confidence for likelihood is all points two log likelihood units worse than the best value. Draw a dotted line on the plot to show this
 
+```{r eval = TRUE}
+plot(x= alpha.values , y= likelihood.values, xlab="alpha", ylab="likelihood", type="l", bty="n", xlim = c(20, 24), ylim = c(-76, -70))
+points(x=OUMV.results$solution[1,1], y=OUMV.results$loglik, pch=16, col="red")
+text(x=OUMV.results$solution[1,1], y=OUMV.results$loglik, "unconstrained best", pos=4, col="red")
+abline(h=c(OUMV.results$loglik-2, OUMV.results$loglik+2), lty="dotted") #Two log-likelihood
+```
+
+####Now, let’s try looking at both theta parameters at once, keeping the other parameters at their MLEs
+
+```{r eval = TRUE}
 require("akima")
 nreps<-400
-theta1.points<-c(best$theta[1,1], rnorm(nreps-1, best$theta[1,1], 5*best$theta[1,2])) #center on optimal value, have extra variance
-theta2.points<-c(best$theta[2,1], rnorm(nreps-1, best$theta[2,1], 5*best$theta[2,2])) #center on optimal value, have extra variance
+theta1.points<-c(OUMV.results$theta[1,1], rnorm(nreps-1, OUMV.results$theta[1,1], 5*OUMV.results$theta[1,2])) #center on optimal value, have extra variance
+theta2.points<-c(OUMV.results$theta[2,1], rnorm(nreps-1, OUMV.results$theta[2,1], 5*OUMV.results$theta[2,2])) #center on optimal value, have extra variance
 likelihood.values<-rep(NA,nreps)
 
 for (iteration in sequence(nreps)) {
-    likelihood.values[iteration] <- OUwie.fixed(tree, trait, model="OUMV", alpha=best$solution[1,], sigma.sq=best$solution[2,], theta=c(theta1.points[iteration], theta2.points[iteration]))$loglik
+    likelihood.values[iteration] <- OUwie.fixed(viola_tree, OUwiedat, model="OUMV", alpha=OUMV.results$solution[1,], sigma.sq=OUMV.results$solution[2,], theta=c(theta1.points[iteration], theta2.points[iteration]))$loglik
 }
-Think of how long that took to do 400 iterations. Now remember how long the search took (longer).
+```
 
+####Think of how long that took to do 400 iterations. Now remember how long the search took (longer).
+
+```{r eval = TRUE}
 likelihood.differences<-(-(likelihood.values-max(likelihood.values)))
-We are interpolating here: contour wants a nice grid. But by centering our simulations on the MLE values, we made sure to sample most thoroughly there
+```
 
+####We are interpolating here: contour wants a nice grid. But by centering our simulations on the MLE values, we made sure to sample most thoroughly there
+
+```{r eval = TRUE}
 interpolated.points<-interp(x=theta1.points, y=theta2.points, z= likelihood.differences, linear=FALSE, extrap=TRUE, xo=seq(min(theta1.points), max(theta1.points), length = 400), yo=seq(min(theta2.points), max(theta2.points), length = 400))
 
 contour(interpolated.points, xlim=range(c(theta1.points, theta2.points)),ylim=range(c(theta1.points, theta2.points)), xlab="Theta 1", ylab="Theta 2", levels=c(2,5,10),add=FALSE,lwd=1, bty="n", asp=1)
 
-points(x=best$theta[1,1], y=best$theta[2,1], col="red", pch=16)
+points(x=OUMV.results$theta[1,1], y=OUMV.results$theta[2,1], col="red", pch=16)
 
-points(x=trait$X[which(trait$Reg==1)],y=rep(min(c(theta1.points, theta2.points)), length(which(trait$Reg==1))), pch=18, col=rgb(0,0,0,.3)) #the tip values in regime 1, plotted along x axis
-points(y=trait$X[which(trait$Reg==2)],x=rep(min(c(theta1.points, theta2.points)), length(which(trait$Reg==2))), pch=18, col=rgb(0,0,0,.3)) #the tip values in regime 2, plotted along y axis
+points(x=OUwiedat$cont.trait.val[which(OUwiedat$regime==1)],y=rep(min(c(theta1.points, theta2.points)), length(which(OUwiedat$regime==1))), pch=18, col=rgb(0,0,0,.3)) #the tip values in regime 1, plotted along x axis
+points(y=OUwiedat$cont.trait.val[which(OUwiedat$regime==2)],x=rep(min(c(theta1.points, theta2.points)), length(which(OUwiedat$regime==2))), pch=18, col=rgb(0,0,0,.3)) #the tip values in regime 2, plotted along y axis
 ```
-The below only works if the discrete trait rate is low, so you have a good chance of estimating where the state is. If it evolves quickly, hard to estimate where the regimes are, so some in regime 1 are incorrectly mapped in regime 2 vice versa. This makes the models more similar than they should be. See Revell 2013, DOI:10.1093/sysbio/sys084 for an exploration of this effect.
-```{r}
+
+####The below only works if the discrete trait rate is low, so you have a good chance of estimating where the state is. If it evolves quickly, hard to estimate where the regimes are, so some in regime 1 are incorrectly mapped in regime 2 vice versa. This makes the models more similar than they should be. See Revell 2013, DOI:10.1093/sysbio/sys084 for an exploration of this effect.
+
+```{r eval = TRUE}
 library(phytools)
-trait.ordered<-data.frame(trait[,2], trait[,2],row.names=trait[,1])
-trait.ordered<- trait.ordered[tree$tip.label,]
+trait.ordered<-data.frame(OUwiedat[,2], OUwiedat[,2],row.names=OUwiedat[,1])
+trait.ordered<- trait.ordered[viola_tree$tip.label,]
 z<-trait.ordered[,1]
 names(z)<-rownames(trait.ordered)
-tree.mapped<-make.simmap(tree,z,model="ER",nsim=1)
+tree.mapped<-make.simmap(viola_tree,z,model="ER",nsim=1)
 leg<-c("black","red")
 names(leg)<-c(1,2)
 plotSimmap(tree.mapped,leg,pts=FALSE,ftype="off", lwd=1)
 
-simmapBased<-OUwie(tree.mapped,trait,model="OUMV", simmap.tree=TRUE, diagn=FALSE)
+simmapBased<-OUwie(tree.mapped,OUwiedat,model="OUMV", simmap.tree=TRUE, diagn=FALSE)
 print(simmapBased)
 print(best)
 ```
-How does this compare to our best model from above? Should they be directly comparable?
+
+
